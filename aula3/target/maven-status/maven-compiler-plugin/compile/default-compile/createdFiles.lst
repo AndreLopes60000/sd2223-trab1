@@ -1,0 +1,9 @@
+aula3/clients/RestUsersClient.class
+aula3/server/resources/UsersResource.class
+aula3/api/rest/UsersService.class
+aula3/api/User.class
+aula3/server/util/CustomLoggingFilter.class
+aula3/clients/RestClient.class
+aula3/server/UsersServer.class
+aula3/clients/CreateUserClient.class
+aula3/clients/SearchUsersClient.class
