@@ -1,5 +1,6 @@
 package aula2.server.resources;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,6 @@ public class UsersResource implements RestUsers {
 		return user.getUserId();
 	}
 
-
 	@Override
 	public User getUser(String userId, String password) {
 		Log.info("getUser : user = " + userId + "; pwd = " + password);
@@ -68,17 +68,16 @@ public class UsersResource implements RestUsers {
 		return user;
 	}
 
-
 	@Override
 	public User updateUser(String userId, String password, User user) {
 		Log.info("updateUser : user = " + userId + "; pwd = " + password + " ; user = " + user);
 		// TODO Complete method
 
 		// Check if user data is valid
-		if(user.getUserId() == null)
+		if(user.getUserId() == null) {
 			Log.info("User object invalid.");
-			throw new WebApplicationException( Status.BAD_REQUEST );
-
+			throw new WebApplicationException(Status.BAD_REQUEST);
+		}
 		// Check if user data is valid
 		if( user.getPassword() == null && user.getFullName() == null &&
 				user.getEmail() == null) {
@@ -110,7 +109,6 @@ public class UsersResource implements RestUsers {
 		return storedUser;
 	}
 
-
 	@Override
 	public User deleteUser(String userId, String password) {
 		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
@@ -139,7 +137,28 @@ public class UsersResource implements RestUsers {
 	public List<User> searchUsers(String pattern) {
 		Log.info("searchUsers : pattern = " + pattern);
 		// TODO Complete method
-		throw new WebApplicationException( Status.NOT_IMPLEMENTED );
+		if(pattern == null){
+			Log.info("Pattern null.");
+			throw new WebApplicationException( Status.BAD_REQUEST );
+		}
+		List<User> usersFound = new ArrayList<>();
+		if(users.isEmpty())
+			return usersFound;
+		User[] allUsers = users.values().toArray(new User[users.size()]);
+		if(pattern.equals("")){
+			for (User u: allUsers) {
+				User newUser = new User(u.getUserId(), u.getFullName(), u.getEmail(), "");
+				usersFound.add(newUser);
+			}
+			return usersFound;
+		}
+		for (User u: allUsers) {
+			if(u.getFullName().contains(pattern)) {
+				User newUser = new User(u.getUserId(), u.getFullName(), u.getEmail(), "");
+				usersFound.add(newUser);
+			}
+		}
+		return usersFound;
 	}
 
 }
