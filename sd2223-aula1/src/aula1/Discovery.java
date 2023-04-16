@@ -56,7 +56,7 @@ class DiscoveryImpl implements Discovery {
 	static final int DISCOVERY_ANNOUNCE_PERIOD = 1000;
 
 	// Replace with appropriate values...
-	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("XXX.XXX.XXX.XXX", -1);
+	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("224.0.0.1", 9000);
 
 	// Used separate the two fields that make up a service announcement.
 	private static final String DELIMITER = "\t";
@@ -65,7 +65,7 @@ class DiscoveryImpl implements Discovery {
 
 	private static Discovery singleton;
 
-	Map <String,List<URI>> hm = new HashMap<>();
+	Map <String,List<URI>> servicesUris = new HashMap<>();
 
 	synchronized static Discovery getInstance() {
 		if (singleton == null) {
@@ -80,6 +80,7 @@ class DiscoveryImpl implements Discovery {
 
 	@Override
 	public void announce(String serviceName, String serviceURI) {
+		System.out.println("Discovery addr: "+DISCOVERY_ADDR);
 		Log.info(String.format("Starting Discovery announcements on: %s for: %s -> %s\n", DISCOVERY_ADDR, serviceName,
 				serviceURI));
 
@@ -108,21 +109,17 @@ class DiscoveryImpl implements Discovery {
 	public URI[] knownUrisOf(String serviceName, int minEntries) {
 		List<URI> uriList;
 		while(true){
-			uriList = hm.get(serviceName);
+			uriList = servicesUris.get(serviceName);
 			if(uriList != null && uriList.size() >= minEntries){
 				break;
 			}
 		}
-		//Log.info("Successfully found a match for service "+serviceName);
-		return convertListToArray(uriList);
-	}
-
-	private URI[] convertListToArray(List<URI> uriList) {
-		URI[] array = new URI[uriList.size()];
-		return uriList.toArray(array);
+		return uriList.toArray(new URI[uriList.size()]);
 	}
 
 	private void startListener() {
+		System.out.printf("Starting discovery on multicast group: %s, port: %d\n", DISCOVERY_ADDR.getAddress(),
+				DISCOVERY_ADDR.getPort());
 		Log.info(String.format("Starting discovery on multicast group: %s, port: %d\n", DISCOVERY_ADDR.getAddress(),
 				DISCOVERY_ADDR.getPort()));
 
@@ -143,10 +140,10 @@ class DiscoveryImpl implements Discovery {
 							var serviceName = parts[0];
 							var uri = URI.create(parts[1]);
 
-							if(hm.containsKey(serviceName))
+							if(servicesUris.containsKey(serviceName))
 								addUrisToList(serviceName, uri);
 							else{
-								hm.put(serviceName,new ArrayList<>());
+								servicesUris.put(serviceName,new ArrayList<>());
 								addUrisToList(serviceName, uri);
 							}
 						}
@@ -161,6 +158,6 @@ class DiscoveryImpl implements Discovery {
 		}).start();
 	}
 	private void addUrisToList(String serviceName, URI uri){
-		hm.get(serviceName).add(uri);
+		servicesUris.get(serviceName).add(uri);
 	}
 }
