@@ -79,8 +79,8 @@ public class RestUsersClient extends RestClient implements UsersService {
 		return null;
 	}
 
-	private List<User> clt_searchUsers(pattern){
-		
+	private List<User> clt_searchUsers(String pattern){
+		return null;
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public class RestUsersClient extends RestClient implements UsersService {
 	public User deleteUser(String name, String pwd) {
 		// TODO Auto-generated method stub
 		return super.reTry(() -> clt_deleteUser(name,pwd) ); }
-	}
+
 
 	@Override
 	public List<User> searchUsers(String pattern) {
