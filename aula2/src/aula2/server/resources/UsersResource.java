@@ -73,7 +73,41 @@ public class UsersResource implements RestUsers {
 	public User updateUser(String userId, String password, User user) {
 		Log.info("updateUser : user = " + userId + "; pwd = " + password + " ; user = " + user);
 		// TODO Complete method
-		throw new WebApplicationException( Status.NOT_IMPLEMENTED );
+
+		// Check if user data is valid
+		if(user.getUserId() == null)
+			Log.info("User object invalid.");
+			throw new WebApplicationException( Status.BAD_REQUEST );
+
+		// Check if user data is valid
+		if( user.getPassword() == null && user.getFullName() == null &&
+				user.getEmail() == null) {
+			Log.info("Empty User object.");
+			throw new WebApplicationException( Status.BAD_REQUEST );
+		}
+		// Check if user exists
+		User storedUser = users.get(userId);
+		if(storedUser == null){
+			Log.info("User does not exist.");
+			throw new WebApplicationException( Status.NOT_FOUND );
+		}
+		//Check if the password is correct
+		if(storedUser.getPassword() != password){
+			Log.info("Password is incorrect.");
+			throw new WebApplicationException( Status.FORBIDDEN );
+		}
+
+		String email = user.getEmail();
+		String pass =  user.getPassword();
+		String fName = user.getFullName();
+		if (email != null)
+			storedUser.setEmail(email);
+		if (pass != null)
+			storedUser.setPassword(pass);
+		if (fName != null)
+			storedUser.setFullName(fName);
+
+		return storedUser;
 	}
 
 
@@ -81,7 +115,23 @@ public class UsersResource implements RestUsers {
 	public User deleteUser(String userId, String password) {
 		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
 		// TODO Complete method
-		throw new WebApplicationException( Status.NOT_IMPLEMENTED );
+		// Check if user is valid
+		if(userId == null || password == null) {
+			Log.info("UserId or password null.");
+			throw new WebApplicationException( Status.BAD_REQUEST );
+		}
+		// Check if user exists
+		User storedUser = users.get(userId);
+		if(storedUser == null){
+			Log.info("User does not exist.");
+			throw new WebApplicationException( Status.NOT_FOUND );
+		}
+		//Check if the password is correct
+		if(storedUser.getPassword() != password){
+			Log.info("Password is incorrect.");
+			throw new WebApplicationException( Status.FORBIDDEN );
+		}
+		return users.remove(userId);
 	}
 
 
