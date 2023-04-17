@@ -1,19 +1,16 @@
-package aula2.clients;
+package aula3.clients;
 
 import java.io.IOException;
+import java.net.URI;
+import java.util.logging.Logger;
 
-import aula2.api.User;
-import org.glassfish.jersey.client.ClientConfig;
-import aula2.api.service.RestUsers;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
+import aula3.api.User;
 public class UpdateUserClient {
+	private static Logger Log = Logger.getLogger(CreateUserClient.class.getName());
 
+	static {
+		System.setProperty("java.net.preferIPv4Stack", "true");
+	}
 	public static void main(String[] args) throws IOException {
 		
 		if( args.length != 6) {
@@ -30,7 +27,7 @@ public class UpdateUserClient {
 		
 		var u = new User( userId, fullName, email, password);
 
-		System.out.println("Sending request to server.");
+		Log.info("Sending request to server.");
 		//TODO complete this client code
 		var result = new RestUsersClient(URI.create(serverUrl)).updateUser(userId,oldpwd,u);
 		System.out.println("Result: " + result);
