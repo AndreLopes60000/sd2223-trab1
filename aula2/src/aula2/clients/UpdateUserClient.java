@@ -3,7 +3,15 @@ package aula2.clients;
 import java.io.IOException;
 
 import aula2.api.User;
-
+import org.glassfish.jersey.client.ClientConfig;
+import aula2.api.service.RestUsers;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 public class UpdateUserClient {
 
 	public static void main(String[] args) throws IOException {

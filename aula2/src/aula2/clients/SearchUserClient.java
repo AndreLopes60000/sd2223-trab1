@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.glassfish.jersey.client.ClientConfig;
-
 import aula2.api.User;
 import aula2.api.service.RestUsers;
 import jakarta.ws.rs.client.Client;
