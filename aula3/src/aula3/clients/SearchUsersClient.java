@@ -14,13 +14,15 @@ public class SearchUsersClient {
 	
 	public static void main(String[] args) throws IOException {
 		
-		if (args.length != 2) {
-			System.err.println("Use: java aula3.clients.SearchUsersClient url pattern ");
+		if (args.length != 1) {
+			System.err.println("Use: java aula3.clients.SearchUsersClient pattern ");
 			return;
 		}
-
-		String serverUrl = args[0];
-		String pattern = args[1];
+		Discovery discovery = aula1.Discovery.getInstance();
+		URI[] uris = discovery.knownUrisOf(initServiceName, 1);
+		String serverUrl = uris[0].toString();
+		//String serverUrl = args[0];
+		String pattern = args[0];
 
 
 		Log.info("Sending request to server.");
