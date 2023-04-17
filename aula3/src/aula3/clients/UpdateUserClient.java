@@ -1,0 +1,40 @@
+package aula2.clients;
+
+import java.io.IOException;
+
+import aula2.api.User;
+import org.glassfish.jersey.client.ClientConfig;
+import aula2.api.service.RestUsers;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+public class UpdateUserClient {
+
+	public static void main(String[] args) throws IOException {
+		
+		if( args.length != 6) {
+			System.err.println( "Use: java aula2.clients.UpdateUserClient url userId oldpwd fullName email password");
+			return;
+		}
+		
+		String serverUrl = args[0];
+		String userId = args[1];
+		String oldpwd = args[2];
+		String fullName = args[3];
+		String email = args[4];
+		String password = args[5];
+		
+		var u = new User( userId, fullName, email, password);
+
+		System.out.println("Sending request to server.");
+		//TODO complete this client code
+		var result = new RestUsersClient(URI.create(serverUrl)).updateUser(userId,oldpwd,u);
+		System.out.println("Result: " + result);
+
+	}
+	
+}

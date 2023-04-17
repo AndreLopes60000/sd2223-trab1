@@ -56,7 +56,8 @@ public class RestUsersClient extends RestClient implements UsersService {
 				.accept(MediaType.APPLICATION_JSON)
 				.put(Entity.entity(user, MediaType.APPLICATION_JSON));
 
-		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
+		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()
+			System.out.println("Success, updated user with id: " + r.readEntity(String.class) );
 			return r.readEntity(User.class);
 		else
 			System.out.println("Error, HTTP error status: " + r.getStatus() );
@@ -80,6 +81,19 @@ public class RestUsersClient extends RestClient implements UsersService {
 	}
 
 	private List<User> clt_searchUsers(String pattern){
+		Response r = target.path("/")
+				.queryParam( RestUsers.QUERY, pattern).request()
+				.accept(MediaType.APPLICATION_JSON)
+				.get();
+
+		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() ) {
+			var users = r.readEntity(new GenericType<List<User>>() {});
+			System.out.println("Success: (" + users.size() + " users)");
+			users.stream().forEach( u -> System.out.println( u));
+			return users;
+		} else
+			System.out.println("Error, HTTP error status: " + r.getStatus() );
+
 		return null;
 	}
 
