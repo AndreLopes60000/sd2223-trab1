@@ -8,6 +8,7 @@ import aula3.api.rest.UsersService;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
@@ -56,9 +57,10 @@ public class RestUsersClient extends RestClient implements UsersService {
 				.accept(MediaType.APPLICATION_JSON)
 				.put(Entity.entity(user, MediaType.APPLICATION_JSON));
 
-		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()
-			System.out.println("Success, updated user with id: " + r.readEntity(String.class) );
+		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
+			System.out.println("Success, updated user with id: " + r.readEntity(String.class));
 			return r.readEntity(User.class);
+		}
 		else
 			System.out.println("Error, HTTP error status: " + r.getStatus() );
 
@@ -72,8 +74,10 @@ public class RestUsersClient extends RestClient implements UsersService {
 				.accept(MediaType.APPLICATION_JSON)
 				.delete();
 
-		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
+		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
+			System.out.println("Success, deleted user with id: " + r.readEntity(String.class));
 			return r.readEntity(User.class);
+		}
 		else
 			System.out.println("Error, HTTP error status: " + r.getStatus() );
 
@@ -82,14 +86,14 @@ public class RestUsersClient extends RestClient implements UsersService {
 
 	private List<User> clt_searchUsers(String pattern){
 		Response r = target.path("/")
-				.queryParam( RestUsers.QUERY, pattern).request()
+				.queryParam( UsersService.QUERY, pattern).request()
 				.accept(MediaType.APPLICATION_JSON)
 				.get();
 
 		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() ) {
 			var users = r.readEntity(new GenericType<List<User>>() {});
 			System.out.println("Success: (" + users.size() + " users)");
-			users.stream().forEach( u -> System.out.println( u));
+			users.stream().forEach( u -> System.out.println(u));
 			return users;
 		} else
 			System.out.println("Error, HTTP error status: " + r.getStatus() );

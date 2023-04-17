@@ -2,10 +2,12 @@ package aula3.clients;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.logging.Logger;
 
 
 public class SearchUsersClient {
-	
+	private static Logger Log = Logger.getLogger(CreateUserClient.class.getName());
+
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
 	}
@@ -21,7 +23,7 @@ public class SearchUsersClient {
 		String userId = args[1];
 
 
-		System.out.println("Sending request to server.");
+		Log.info("Sending request to server.");
 
 		new RestUsersClient(URI.create(serverUrl)).searchUsers(userId);
 
