@@ -69,19 +69,96 @@ public class UsersResource implements UsersService {
 	@Override
 	public User updateUser(String name, String pwd, User user) {
 		// TODO Auto-generated method stub
-		return null;
+		Log.info("updateUser : user = " + name + "; pwd = " + pwd + " ; user = " + user);
+		// TODO Complete method
+
+		// Check if user data is valid
+		if(user.getName() == null) {
+			Log.info("User object invalid.");
+			throw new WebApplicationException(Status.BAD_REQUEST);
+		}
+		// Check if user data is valid
+		if( user.getPwd() == null && user.getDisplayName() == null &&
+				user.getDomain() == null) {
+			Log.info("Empty User object.");
+			throw new WebApplicationException( Status.BAD_REQUEST );
+		}
+		// Check if user exists
+		User storedUser = users.get(name);
+		if(storedUser == null){
+			Log.info("User does not exist.");
+			throw new WebApplicationException( Status.NOT_FOUND );
+		}
+		//Check if the password is correct
+		if(!storedUser.getPwd().equals(pwd)){
+			Log.info("Password is incorrect.");
+			throw new WebApplicationException( Status.FORBIDDEN );
+		}
+
+		String domain = user.getDomain();
+		String pass =  user.getPwd();
+		String dName = user.getDisplayName();
+		if (domain != null)
+			storedUser.setDomain(domain);
+		if (pass != null)
+			storedUser.setPwd(pass);
+		if (dName != null)
+			storedUser.setDisplayName(dName);
+
+		return storedUser;
 	}
 
 	@Override
 	public User deleteUser(String name, String pwd) {
 		// TODO Auto-generated method stub
-		return null;
+		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
+		// TODO Complete method
+		// Check if user is valid
+		if(userId == null || password == null) {
+			Log.info("UserId or password null.");
+			throw new WebApplicationException( Status.BAD_REQUEST );
+		}
+		// Check if user exists
+		User storedUser = users.get(userId);
+		if(storedUser == null){
+			Log.info("User does not exist.");
+			throw new WebApplicationException( Status.NOT_FOUND );
+		}
+		//Check if the password is correct
+		if(!storedUser.getPassword().equals(password)){
+			Log.info("Password is incorrect.");
+			throw new WebApplicationException( Status.FORBIDDEN );
+		}
+		return users.remove(userId);
 	}
 
 	@Override
 	public List<User> searchUsers(String pattern) {
 		// TODO Auto-generated method stub
-		return null;
+		Log.info("searchUsers : pattern = " + pattern);
+		// TODO Complete method
+		if(pattern == null){
+			Log.info("Pattern null.");
+			throw new WebApplicationException( Status.BAD_REQUEST );
+		}
+		List<User> usersFound = new ArrayList<>();
+		if(users.isEmpty())
+			return usersFound;
+		User[] allUsers = users.values().toArray(new User[users.size()]);
+		if(pattern.equals("")){
+			for (User u: allUsers) {
+				User newUser = new User(u.getUserId(), u.getFullName(), u.getEmail(), "");
+				usersFound.add(newUser);
+			}
+			return usersFound;
+		}
+		for (User u: allUsers) {
+			if(u.getFullName().toLowerCase().contains(pattern.toLowerCase())) {
+				User newUser = new User(u.getUserId(), u.getFullName(), u.getEmail(), "");
+				usersFound.add(newUser);
+			}
+		}
+		return usersFound;
 	}
 	
 }
