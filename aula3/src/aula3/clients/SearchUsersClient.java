@@ -15,17 +15,17 @@ public class SearchUsersClient {
 	public static void main(String[] args) throws IOException {
 		
 		if (args.length != 2) {
-			System.err.println("Use: java aula3.clients.SearchUsersClient url userId ");
+			System.err.println("Use: java aula3.clients.SearchUsersClient url pattern ");
 			return;
 		}
 
 		String serverUrl = args[0];
-		String userId = args[1];
+		String pattern = args[1];
 
 
 		Log.info("Sending request to server.");
 
-		new RestUsersClient(URI.create(serverUrl)).searchUsers(userId);
+		new RestUsersClient(URI.create(serverUrl)).searchUsers(pattern);
 
 	}
 

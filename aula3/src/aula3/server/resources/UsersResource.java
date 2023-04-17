@@ -1,5 +1,6 @@
 package aula3.server.resources;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,25 +112,25 @@ public class UsersResource implements UsersService {
 	@Override
 	public User deleteUser(String name, String pwd) {
 		// TODO Auto-generated method stub
-		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
+		Log.info("deleteUser : user = " + name + "; pwd = " + pwd);
 		// TODO Complete method
 		// Check if user is valid
-		if(userId == null || password == null) {
-			Log.info("UserId or password null.");
+		if(name == null || pwd == null) {
+			Log.info("name or password null.");
 			throw new WebApplicationException( Status.BAD_REQUEST );
 		}
 		// Check if user exists
-		User storedUser = users.get(userId);
+		User storedUser = users.get(name);
 		if(storedUser == null){
 			Log.info("User does not exist.");
 			throw new WebApplicationException( Status.NOT_FOUND );
 		}
 		//Check if the password is correct
-		if(!storedUser.getPassword().equals(password)){
+		if(!storedUser.getPwd().equals(pwd)){
 			Log.info("Password is incorrect.");
 			throw new WebApplicationException( Status.FORBIDDEN );
 		}
-		return users.remove(userId);
+		return users.remove(name);
 	}
 
 	@Override
@@ -147,14 +148,14 @@ public class UsersResource implements UsersService {
 		User[] allUsers = users.values().toArray(new User[users.size()]);
 		if(pattern.equals("")){
 			for (User u: allUsers) {
-				User newUser = new User(u.getUserId(), u.getFullName(), u.getEmail(), "");
+				User newUser = new User(u.getName(),"",u.getDomain(), u.getDisplayName());
 				usersFound.add(newUser);
 			}
 			return usersFound;
 		}
 		for (User u: allUsers) {
-			if(u.getFullName().toLowerCase().contains(pattern.toLowerCase())) {
-				User newUser = new User(u.getUserId(), u.getFullName(), u.getEmail(), "");
+			if(u.getDisplayName().toLowerCase().contains(pattern.toLowerCase())) {
+				User newUser = new User(u.getName(),"",u.getDomain(), u.getDisplayName());
 				usersFound.add(newUser);
 			}
 		}

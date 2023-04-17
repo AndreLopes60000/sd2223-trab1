@@ -58,7 +58,6 @@ public class RestUsersClient extends RestClient implements UsersService {
 				.put(Entity.entity(user, MediaType.APPLICATION_JSON));
 
 		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
-			System.out.println("Success, updated user with id: " + r.readEntity(String.class));
 			return r.readEntity(User.class);
 		}
 		else
@@ -75,7 +74,6 @@ public class RestUsersClient extends RestClient implements UsersService {
 				.delete();
 
 		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
-			System.out.println("Success, deleted user with id: " + r.readEntity(String.class));
 			return r.readEntity(User.class);
 		}
 		else

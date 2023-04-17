@@ -13,17 +13,17 @@ public class DeleteUserClient {
 	public static void main(String[] args) throws IOException {
 		
 		if( args.length != 3) {
-			System.err.println( "Use: java aula2.clients.DeleteUserClient url userId password");
+			System.err.println( "Use: java aula3.clients.DeleteUserClient url name pwd");
 			return;
 		}
 		
 		String serverUrl = args[0];
-		String userId = args[1];
+		String name = args[1];
 		String password = args[2];
 		
 		Log.info("Sending request to server.");
 		//TODO complete this client code
-		var result = new RestUsersClient(URI.create(serverUrl)).deleteUser(userId, password);
+		var result = new RestUsersClient(URI.create(serverUrl)).deleteUser(name, password);
 		System.out.println("Result: " + result);
 
 	}
