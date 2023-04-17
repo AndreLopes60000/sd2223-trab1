@@ -35,7 +35,6 @@ public class UsersServer {
 		Log.info(String.format("%s Server ready @ %s\n",  SERVICE, serverURI));
 		
 		//More code can be executed here...
-		UsersResource resource = new UsersResource();
 
 		} catch( Exception e) {
 			Log.severe(e.getMessage());

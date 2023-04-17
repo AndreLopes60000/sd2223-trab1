@@ -33,7 +33,8 @@ public class SearchUserClient {
 		
 		WebTarget target = client.target( serverUrl ).path( RestUsers.PATH );
 		
-		Response r = target.path("/").queryParam( RestUsers.QUERY, query).request()
+		Response r = target.path("/")
+				.queryParam( RestUsers.QUERY, query).request()
 				.accept(MediaType.APPLICATION_JSON)
 				.get();
 

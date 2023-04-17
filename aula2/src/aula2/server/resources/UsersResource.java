@@ -91,7 +91,7 @@ public class UsersResource implements RestUsers {
 			throw new WebApplicationException( Status.NOT_FOUND );
 		}
 		//Check if the password is correct
-		if(storedUser.getPassword() != password){
+		if(!storedUser.getPassword().equals(password)){
 			Log.info("Password is incorrect.");
 			throw new WebApplicationException( Status.FORBIDDEN );
 		}
@@ -125,7 +125,7 @@ public class UsersResource implements RestUsers {
 			throw new WebApplicationException( Status.NOT_FOUND );
 		}
 		//Check if the password is correct
-		if(storedUser.getPassword() != password){
+		if(!storedUser.getPassword().equals(password)){
 			Log.info("Password is incorrect.");
 			throw new WebApplicationException( Status.FORBIDDEN );
 		}
@@ -153,7 +153,7 @@ public class UsersResource implements RestUsers {
 			return usersFound;
 		}
 		for (User u: allUsers) {
-			if(u.getFullName().contains(pattern)) {
+			if(u.getFullName().toLowerCase().contains(pattern.toLowerCase())) {
 				User newUser = new User(u.getUserId(), u.getFullName(), u.getEmail(), "");
 				usersFound.add(newUser);
 			}
