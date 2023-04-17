@@ -1,4 +1,4 @@
-package aula1;
+package aula3.api;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -118,11 +118,12 @@ class DiscoveryImpl implements Discovery {
 	}
 
 	private void startListener() {
+		/*
 		System.out.printf("Starting discovery on multicast group: %s, port: %d\n", DISCOVERY_ADDR.getAddress(),
 				DISCOVERY_ADDR.getPort());
 		Log.info(String.format("Starting discovery on multicast group: %s, port: %d\n", DISCOVERY_ADDR.getAddress(),
 				DISCOVERY_ADDR.getPort()));
-
+		*/
 		new Thread(() -> {
 			try (var ms = new MulticastSocket(DISCOVERY_ADDR.getPort())) {
 				ms.joinGroup(DISCOVERY_ADDR, NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
@@ -132,7 +133,7 @@ class DiscoveryImpl implements Discovery {
 						ms.receive(pkt);
 
 						var msg = new String(pkt.getData(), 0, pkt.getLength());
-						Log.info(String.format("Received: %s", msg));
+						//Log.info(String.format("Received: %s", msg));
 
 						var parts = msg.split(DELIMITER);
 						if (parts.length == 2) {
@@ -146,6 +147,7 @@ class DiscoveryImpl implements Discovery {
 								servicesUris.put(serviceName,new ArrayList<>());
 								addUrisToList(serviceName, uri);
 							}
+							break;
 						}
 
 					} catch (Exception x) {

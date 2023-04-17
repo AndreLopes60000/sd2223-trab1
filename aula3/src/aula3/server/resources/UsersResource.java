@@ -154,7 +154,7 @@ public class UsersResource implements UsersService {
 			return usersFound;
 		}
 		for (User u: allUsers) {
-			if(u.getDisplayName().toLowerCase().contains(pattern.toLowerCase())) {
+			if(u.getName().toLowerCase().contains(pattern.toLowerCase())) {
 				User newUser = new User(u.getName(),"",u.getDomain(), u.getDisplayName());
 				usersFound.add(newUser);
 			}

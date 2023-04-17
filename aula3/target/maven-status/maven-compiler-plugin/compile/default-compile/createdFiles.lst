@@ -1,3 +1,4 @@
+aula3\api\Discovery.class
 aula3\clients\DeleteUserClient.class
 aula3\clients\UpdateUserClient.class
 aula3\api\User.class
@@ -7,6 +8,7 @@ aula3\clients\RestClient.class
 aula3\clients\RestUsersClient.class
 aula3\server\resources\UsersResource.class
 aula3\server\util\CustomLoggingFilter.class
+aula3\api\DiscoveryImpl.class
 aula3\api\rest\UsersService.class
 aula3\clients\RestUsersClient$1.class
 aula3\clients\GetUserClient.class

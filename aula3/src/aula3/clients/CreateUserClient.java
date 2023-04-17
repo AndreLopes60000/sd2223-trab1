@@ -3,8 +3,9 @@ package aula3.clients;
 import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Logger;
-
+import aula3.api.Discovery;
 import aula3.api.User;
+import aula3.server.UsersServer;
 
 public class CreateUserClient {
 	
@@ -16,16 +17,19 @@ public class CreateUserClient {
 	
 	public static void main(String[] args) throws IOException {
 				
-		if (args.length != 5) {
-			System.err.println("Use: java aula3.clients.CreateUserClient url name pwd domain displayName");
+		if (args.length != 4) {
+			System.err.println("Use: java aula3.clients.CreateUserClient name pwd domain displayName");
 			return;
 		}
 
-		String serverUrl = args[0];
-		String name = args[1];
-		String pwd = args[2];
-		String domain = args[3];
-		String displayName = args[4];
+		Discovery discovery = aula3.api.Discovery.getInstance();
+		URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE, 1);
+		String serverUrl = uris[0].toString();
+
+		String name = args[0];
+		String pwd = args[1];
+		String domain = args[2];
+		String displayName = args[3];
 
 		User u = new User(name, pwd, domain, displayName);
 

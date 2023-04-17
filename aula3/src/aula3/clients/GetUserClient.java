@@ -1,5 +1,7 @@
 package aula3.clients;
 
+import aula3.server.UsersServer;
+import aula3.api.Discovery;
 import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Logger;
@@ -13,14 +15,16 @@ public class GetUserClient {
 
 	public static void main(String[] args) throws IOException {
 		
-		if( args.length != 3) {
-			System.err.println( "Use: java aula2.clients.GetUserClient url name password");
+		if( args.length != 2) {
+			System.err.println( "Use: java aula2.clients.GetUserClient name password");
 			return;
 		}
-		
-		String serverUrl = args[0];
-		String name = args[1];
-		String password = args[2];
+		Discovery discovery = aula3.api.Discovery.getInstance();
+		URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE, 1);
+		String serverUrl = uris[0].toString();
+
+		String name = args[0];
+		String password = args[1];
 
 		Log.info("Sending request to server.");
 
