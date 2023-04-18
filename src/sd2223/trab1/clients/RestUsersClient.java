@@ -16,7 +16,7 @@ public class RestUsersClient extends RestClient implements UsersService {
 
 	final WebTarget target;
 	
-	RestUsersClient( URI serverURI ) {
+	public RestUsersClient( URI serverURI ) {
 		super( serverURI );
 		target = client.target( serverURI ).path( UsersService.PATH );
 	}
@@ -46,7 +46,7 @@ public class RestUsersClient extends RestClient implements UsersService {
 			return r.readEntity(User.class);
 		else
 			System.out.println("Error, HTTP error status: " + r.getStatus() );
-		
+
 		return null;
 	}
 
@@ -98,6 +98,19 @@ public class RestUsersClient extends RestClient implements UsersService {
 
 		return null;
 	}
+	private User clt_checkUser(String name) {
+		Response r = target.path( name )
+				.request()
+				.accept(MediaType.APPLICATION_JSON)
+				.get();
+
+		if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
+			return r.readEntity(User.class);
+		else
+			System.out.println("Error, HTTP error status: " + r.getStatus() );
+
+		return null;
+	}
 
 	@Override
 	public String createUser(User user) {
@@ -122,4 +135,11 @@ public class RestUsersClient extends RestClient implements UsersService {
 	public List<User> searchUsers(String pattern) {
 		return super.reTry(() -> clt_searchUsers(pattern));
 	}
+
+	@Override
+	public User checkUser(String name) {
+		return super.reTry(() -> clt_checkUser(name));
+	}
+
+
 }

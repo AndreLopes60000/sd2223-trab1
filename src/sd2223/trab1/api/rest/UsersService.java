@@ -94,4 +94,15 @@ public interface UsersService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	List<User> searchUsers(@QueryParam(QUERY) String pattern);
+
+	/**
+	 * Checks if there is a user with the given name in a certain domain
+	 *
+	 * @param name name of the user to search
+	 * @return true if exists a user with the given name and false otherwise
+	 */
+	@GET
+	@Path("/{"+NAME+"}")
+	@Produces(MediaType.APPLICATION_JSON)
+	User checkUser(@PathParam(NAME) String name);
 }

@@ -155,5 +155,10 @@ public class UsersResource implements UsersService {
 		}
 		return usersFound;
 	}
-	
+
+	@Override
+	public User checkUser(String name) {
+		return users.get(name);
+	}
+
 }
