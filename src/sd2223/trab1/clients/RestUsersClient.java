@@ -111,18 +111,15 @@ public class RestUsersClient extends RestClient implements UsersService {
 
 	@Override
 	public User updateUser(String name, String pwd, User user) {
-		// TODO Auto-generated method stub
 		return super.reTry(() -> clt_updateUser(name,pwd,user) ); }
 
 	@Override
 	public User deleteUser(String name, String pwd) {
-		// TODO Auto-generated method stub
 		return super.reTry(() -> clt_deleteUser(name,pwd) ); }
 
 
 	@Override
 	public List<User> searchUsers(String pattern) {
-		// TODO Auto-generated method stub
 		return super.reTry(() -> clt_searchUsers(pattern));
 	}
 }

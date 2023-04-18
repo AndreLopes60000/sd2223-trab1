@@ -69,9 +69,7 @@ public class UsersResource implements UsersService {
 
 	@Override
 	public User updateUser(String name, String pwd, User user) {
-		// TODO Auto-generated method stub
 		Log.info("updateUser : user = " + name + "; pwd = " + pwd + " ; user = " + user);
-		// TODO Complete method
 
 		// Check if user data is valid
 		if(user.getName() == null) {
@@ -111,9 +109,7 @@ public class UsersResource implements UsersService {
 
 	@Override
 	public User deleteUser(String name, String pwd) {
-		// TODO Auto-generated method stub
 		Log.info("deleteUser : user = " + name + "; pwd = " + pwd);
-		// TODO Complete method
 		// Check if user is valid
 		if(name == null || pwd == null) {
 			Log.info("name or password null.");
@@ -135,9 +131,7 @@ public class UsersResource implements UsersService {
 
 	@Override
 	public List<User> searchUsers(String pattern) {
-		// TODO Auto-generated method stub
 		Log.info("searchUsers : pattern = " + pattern);
-		// TODO Complete method
 		if(pattern == null){
 			Log.info("Pattern null.");
 			throw new WebApplicationException( Status.BAD_REQUEST );

@@ -18,8 +18,8 @@ public class Message {
 		this.creationTime = -1;
 		this.text = null;
 	}
-	public Message(long id, String user, String domain, String text) {
-		this.id = id;
+	public Message(int svNum, String user, String domain, String text) {
+		this.id = this.hashCode(svNum, user, domain, text);
 		this.user = user;
 		this.domain = domain;
 		this.creationTime = System.currentTimeMillis();
@@ -70,5 +70,14 @@ public class Message {
 	public String toString() {
 		return "Message [id=" + id + ", user=" + user + ", domain=" + domain + ", creationTime=" + creationTime
 				+ ", text=" + text + "]";
+	}
+
+	private long hashCode(int num, String user, String domain, String text) {
+		final int prime = 31;
+		int result = num;
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result + ((domain == null) ? 0 : domain.hashCode());
+		result = prime * result + ((text == null) ? 0 : text.hashCode());
+		return result;
 	}
 }

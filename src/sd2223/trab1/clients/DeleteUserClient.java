@@ -1,6 +1,6 @@
 package sd2223.trab1.clients;
 
-import aula3.api.Discovery;
+import sd2223.trab1.api.Discovery;
 import sd2223.trab1.servers.UsersServer;
 import java.io.IOException;
 import java.net.URI;
@@ -18,7 +18,7 @@ public class DeleteUserClient {
 			System.err.println( "Use: java aula3.clients.DeleteUserClient name pwd");
 			return;
 		}
-		Discovery discovery = aula3.api.Discovery.getInstance();
+		Discovery discovery = Discovery.getInstance();
 		URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE, 1);
 		String serverUrl = uris[0].toString();
 

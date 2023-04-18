@@ -1,7 +1,7 @@
 package sd2223.trab1.clients;
 
 import sd2223.trab1.servers.UsersServer;
-import aula3.api.Discovery;
+import sd2223.trab1.api.Discovery;
 import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Logger;
@@ -19,7 +19,7 @@ public class GetUserClient {
 			System.err.println( "Use: java aula2.clients.GetUserClient name password");
 			return;
 		}
-		Discovery discovery = aula3.api.Discovery.getInstance();
+		Discovery discovery = Discovery.getInstance();
 		URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE, 1);
 		String serverUrl = uris[0].toString();
 

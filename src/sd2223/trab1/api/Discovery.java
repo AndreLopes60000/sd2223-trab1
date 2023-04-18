@@ -1,4 +1,4 @@
-package sd2223.trab1;
+package sd2223.trab1.api;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

@@ -2,7 +2,7 @@ package sd2223.trab1.servers;
 
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import sd2223.trab1.servers.resources.UsersResource;
+import sd2223.trab1.servers.resources.FeedsResource;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
             try {
 
                 ResourceConfig config = new ResourceConfig();
-                config.register(UsersResource.class);
+                config.register(FeedsResource.class);
                 // config.register(CustomLoggingFilter.class);
 
                 String ip = InetAddress.getLocalHost().getHostAddress();
