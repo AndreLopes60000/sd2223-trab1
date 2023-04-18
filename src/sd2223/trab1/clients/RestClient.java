@@ -24,7 +24,7 @@ public class RestClient {
 	final Client client;
 	final ClientConfig config;
 
-	RestClient(URI serverURI) {
+	 RestClient(URI serverURI) {
 		this.serverURI = serverURI;
 		this.config = new ClientConfig();
 

@@ -1,42 +1,36 @@
-package sd2223.trab1.clients;
+package sd2223.trab1.clients.Users;
 
+import sd2223.trab1.api.Discovery;
+import sd2223.trab1.clients.RestUsersClient;
+import sd2223.trab1.servers.UsersServer;
 import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Logger;
-import sd2223.trab1.api.Discovery;
-import sd2223.trab1.api.User;
-import sd2223.trab1.servers.UsersServer;
 
-public class CreateUserClient {
-	
+public class DeleteUserClient {
 	private static Logger Log = Logger.getLogger(CreateUserClient.class.getName());
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
 	}
-	
 	public static void main(String[] args) throws IOException {
-				
-		if (args.length != 4) {
-			System.err.println("Use: java aula3.clients.CreateUserClient name pwd domain displayName");
+		
+		if( args.length != 2) {
+			System.err.println( "Use: java aula3.clients.DeleteUserClient name pwd");
 			return;
 		}
-
 		Discovery discovery = Discovery.getInstance();
 		URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE, 1);
 		String serverUrl = uris[0].toString();
 
 		String name = args[0];
-		String pwd = args[1];
-		String domain = args[2];
-		String displayName = args[3];
-
-		User u = new User(name, pwd, domain, displayName);
-
+		String password = args[1];
+		
 		Log.info("Sending request to server.");
-
-		var result = new RestUsersClient(URI.create(serverUrl)).createUser(u);
+		//TODO complete this client code
+		var result = new RestUsersClient(URI.create(serverUrl)).deleteUser(name, password);
 		System.out.println("Result: " + result);
-	}
 
+	}
+	
 }

@@ -2,6 +2,7 @@ package sd2223.trab1.servers;
 
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import sd2223.trab1.api.Discovery;
 import sd2223.trab1.servers.resources.FeedsResource;
 
 import java.net.InetAddress;
@@ -29,7 +30,7 @@ import java.util.logging.Logger;
                 String ip = InetAddress.getLocalHost().getHostAddress();
                 String serverURI = String.format(SERVER_URI_FMT, ip, PORT);
 
-                Discovery discovery = aula3.api.Discovery.getInstance();
+                Discovery discovery = Discovery.getInstance();
                 discovery.announce(SERVICE, serverURI);
 
                 JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);

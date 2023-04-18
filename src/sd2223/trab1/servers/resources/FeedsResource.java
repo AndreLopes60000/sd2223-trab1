@@ -2,7 +2,6 @@ package sd2223.trab1.servers.resources;
 
 import sd2223.trab1.api.Discovery;
 import sd2223.trab1.api.Message;
-import sd2223.trab1.api.User;
 import sd2223.trab1.api.rest.FeedsService;
 import sd2223.trab1.clients.RestUsersClient;
 import sd2223.trab1.servers.UsersServer;
