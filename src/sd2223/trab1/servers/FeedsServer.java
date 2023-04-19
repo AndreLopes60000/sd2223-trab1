@@ -17,7 +17,8 @@ import java.util.logging.Logger;
     }
 
     public static final int PORT = 8080;
-    public static final String SERVICE = "FeedsService";
+    public static final String SERVICE = "feeds";
+    private static final String DELIMITER = "\t";
     private static final String SERVER_URI_FMT = "http://%s:%s/rest";
 
         public static void main(String[] args) {
@@ -32,9 +33,9 @@ import java.util.logging.Logger;
 
                 String ip = InetAddress.getLocalHost().getHostAddress();
                 String serverURI = String.format(SERVER_URI_FMT, ip, PORT);
-
+                String message = domain+":"+SERVICE+DELIMITER+serverURI;
                 Discovery discovery = Discovery.getInstance();
-                discovery.announce(SERVICE, serverURI);
+                discovery.announce(message);
                 JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 
 

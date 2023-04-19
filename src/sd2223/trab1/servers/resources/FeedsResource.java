@@ -1,5 +1,6 @@
 package sd2223.trab1.servers.resources;
 
+import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import sd2223.trab1.api.Discovery;
@@ -10,18 +11,21 @@ import sd2223.trab1.servers.UsersServer;
 
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+@Singleton
 public class FeedsResource implements FeedsService {
 
     private static Logger Log = Logger.getLogger(FeedsResource.class.getName());
     private final Map<String, List<Message>> usersMessages = new HashMap<>();
     private final Map<String,List<String>> usersSubs = new HashMap<>();
+
+    //private final Map<String, Pair> cachedMessages= new HashMap<>();
+    //private final List<Long> messagesIDs = new ArrayList<Long>();
     public FeedsResource() {
     }
     @Override
@@ -34,7 +38,7 @@ public class FeedsResource implements FeedsService {
         String messageDomain = msg.getDomain();
 
         Discovery discovery = Discovery.getInstance();
-        URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE+"/"+messageDomain, 1);
+        URI[] uris = discovery.knownUrisOf(messageDomain+"/"+UsersServer.SERVICE, 1);
         String serverUrl = uris[0].toString();
 
         var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);

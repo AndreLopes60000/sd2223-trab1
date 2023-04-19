@@ -94,11 +94,8 @@ public class UsersResource implements UsersService {
 			throw new WebApplicationException( Status.FORBIDDEN );
 		}
 
-		String domain = user.getDomain();
 		String pass =  user.getPwd();
 		String dName = user.getDisplayName();
-		if (domain != null)
-			storedUser.setDomain(domain);
 		if (pass != null)
 			storedUser.setPwd(pass);
 		if (dName != null)

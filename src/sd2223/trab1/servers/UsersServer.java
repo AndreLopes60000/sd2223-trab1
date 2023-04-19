@@ -17,7 +17,8 @@ public class UsersServer {
 	}
 
 	public static final int PORT = 8080;
-	public static final String SERVICE = "UsersService";
+	public static final String SERVICE = "users";
+	private static final String DELIMITER = "\t";
 	private static final String SERVER_URI_FMT = "http://%s:%s/rest";
 
 	public static void main(String[] args) {
@@ -27,11 +28,15 @@ public class UsersServer {
 			config.register(UsersResource.class);
 			// config.register(CustomLoggingFilter.class);
 
+			String domain = args[0];
+			int num = Integer.parseInt(args[1]);
+
 			String ip = InetAddress.getLocalHost().getHostAddress();
 			String serverURI = String.format(SERVER_URI_FMT, ip, PORT);
 
+			String message = domain+":"+SERVICE+DELIMITER+serverURI;
 			Discovery discovery = Discovery.getInstance();
-			discovery.announce(SERVICE, serverURI);
+			discovery.announce(message);
 
 			JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 

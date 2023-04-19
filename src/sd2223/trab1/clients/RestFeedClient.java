@@ -33,6 +33,7 @@ public class RestFeedClient extends RestClient implements FeedsService {
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(msg, MediaType.APPLICATION_JSON));
 
+
         if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
             return r.readEntity(long.class);
         else

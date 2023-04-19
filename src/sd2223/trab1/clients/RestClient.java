@@ -32,6 +32,7 @@ public class RestClient {
 		config.property( ClientProperties.CONNECT_TIMEOUT, CONNECT_TIMEOUT);
 		
 		this.client = ClientBuilder.newClient(config);
+
 	}
 
 	protected <T> T reTry(Supplier<T> func) {
