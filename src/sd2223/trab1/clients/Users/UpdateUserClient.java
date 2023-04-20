@@ -9,7 +9,7 @@ import sd2223.trab1.clients.RestUsersClient;
 import sd2223.trab1.servers.UsersServer;
 
 public class UpdateUserClient {
-	private static Logger Log = Logger.getLogger(CreateUserClient.class.getName());
+	private static Logger Log = Logger.getLogger(UpdateUserClient.class.getName());
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -17,7 +17,7 @@ public class UpdateUserClient {
 	public static void main(String[] args) throws IOException {
 		
 		if( args.length != 6) {
-			System.err.println( "Use: java aula3.clients.UpdateUserClient name oldpwd displayName domain password");
+			System.err.println( "Use: java sd2223.trab1.clients.Users.UpdateUserClient name oldpwd displayName domain password");
 			return;
 		}
 		Discovery discovery = Discovery.getInstance();

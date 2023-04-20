@@ -8,7 +8,7 @@ import sd2223.trab1.clients.RestUsersClient;
 import sd2223.trab1.servers.UsersServer;
 
 public class SearchUsersClient {
-	private static Logger Log = Logger.getLogger(CreateUserClient.class.getName());
+	private static Logger Log = Logger.getLogger(SearchUsersClient.class.getName());
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -17,7 +17,7 @@ public class SearchUsersClient {
 	public static void main(String[] args) throws IOException {
 		
 		if (args.length != 1) {
-			System.err.println("Use: java aula3.clients.SearchUsersClient pattern ");
+			System.err.println("Use: java sd2223.trab1.clients.Users.SearchUsersClient pattern ");
 			return;
 		}
 		Discovery discovery = Discovery.getInstance();
