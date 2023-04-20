@@ -11,6 +11,7 @@ import sd2223.trab1.servers.UsersServer;
 
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,14 +76,16 @@ public class FeedsResource implements FeedsService {
         String userDomain = nameAndDomain[1];
         String domain = "";
         try {
-            domain = InetAddress.getLocalHost().getHostName();
+            domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
 
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
 
-        if (domain.equals(userDomain)) {
 
+        if (!domain.equals(userDomain)) {
+            Log.info("User does not exist.");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         Discovery discovery = Discovery.getInstance();
         URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
@@ -124,6 +127,36 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public Message getMessage(String user, long mid) {
+        String name = user.split("@")[0];
+        String userDomain = user.split("@")[1];
+        String domain = "";
+        try {
+            domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
+
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        if(domain.equals(userDomain)){
+            List<Message> messages = usersMessages.get(name);
+            if (messages == null) {
+                Log.info("Message does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            Message m = getMsgFromList(mid, messages);
+            if (m == null) {
+                Log.info("Message does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            return m;
+        }
+
+        Discovery discovery = Discovery.getInstance();
+        URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + userDomain, 1);
+        String serverUrl = uris[0].toString();
+
+        //var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
+
+
         return null;
     }
 
@@ -134,11 +167,28 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public void subUser(String user, String userSub, String pwd) {
+        String[] nameAndDomain = user.split("@");
+        String name = nameAndDomain[0];
+        String userDomain = nameAndDomain[1];
+        String domain = "";
+        try {
+            domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
 
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (!domain.equals(userDomain)) {
+            Log.info("User does not exist.");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
     }
 
     @Override
     public void unsubscribeUser(String user, String userSub, String pwd) {
+
+
+
 
     }
 
