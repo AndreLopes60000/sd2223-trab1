@@ -17,7 +17,7 @@ public class ListSubsClient {
 
     public static void main(String[] args) throws IOException {
 
-        if( args.length != 2) {
+        if( args.length != 1) {
             System.err.println( "Use: java sd2223.trab1.clients.Feeds.ListSubsClient user");
             return;
         }

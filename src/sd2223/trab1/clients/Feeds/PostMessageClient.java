@@ -1,6 +1,7 @@
 package sd2223.trab1.clients.Feeds;
 
 import sd2223.trab1.api.Discovery;
+import sd2223.trab1.api.Message;
 import sd2223.trab1.clients.RestFeedClient;
 import sd2223.trab1.servers.FeedsServer;
 
@@ -9,7 +10,7 @@ import java.net.URI;
 import java.util.logging.Logger;
 
 public class PostMessageClient {
-    private static Logger Log = Logger.getLogger(GetMessageClient.class.getName());
+    private static Logger Log = Logger.getLogger(PostMessageClient.class.getName());
 
     static {
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -18,7 +19,7 @@ public class PostMessageClient {
     public static void main(String[] args) throws IOException {
 
         if( args.length != 2) {
-            System.err.println( "Use: java sd2223.trab1.clients.Feeds.PostMessageClient user pwd id domain creationTime text");
+            System.err.println( "Use: java sd2223.trab1.clients.Feeds.PostMessageClient user pwd msg[id, user, domain, creationTime, text]");
             return;
         }
         Discovery discovery = Discovery.getInstance();
@@ -27,7 +28,13 @@ public class PostMessageClient {
 
         String user = args[0];
         String pwd = args[1];
+        String id = args[2];
+        String user = args[3];
+        String domain = args[4];
+        String creationTime = args[5];
+        String text = args[6];
 
+        Message msg = args[2];
 
         Log.info("Sending request to server.");
 
