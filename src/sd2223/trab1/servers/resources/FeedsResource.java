@@ -11,6 +11,7 @@ import sd2223.trab1.servers.UsersServer;
 
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

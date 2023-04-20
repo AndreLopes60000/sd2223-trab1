@@ -8,7 +8,7 @@ import java.net.URI;
 import java.util.logging.Logger;
 
 public class GetUserClient {
-	private static Logger Log = Logger.getLogger(CreateUserClient.class.getName());
+	private static Logger Log = Logger.getLogger(GetUserClient.class.getName());
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -17,7 +17,7 @@ public class GetUserClient {
 	public static void main(String[] args) throws IOException {
 		
 		if( args.length != 2) {
-			System.err.println( "Use: java aula2.clients.GetUserClient name password");
+			System.err.println( "Use: java sd2223.trab1.clients.Users.GetUserClient name password");
 			return;
 		}
 		Discovery discovery = Discovery.getInstance();

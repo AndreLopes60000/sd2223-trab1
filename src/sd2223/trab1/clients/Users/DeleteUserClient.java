@@ -8,7 +8,7 @@ import java.net.URI;
 import java.util.logging.Logger;
 
 public class DeleteUserClient {
-	private static Logger Log = Logger.getLogger(CreateUserClient.class.getName());
+	private static Logger Log = Logger.getLogger(DeleteUserClient.class.getName());
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -16,7 +16,7 @@ public class DeleteUserClient {
 	public static void main(String[] args) throws IOException {
 		
 		if( args.length != 2) {
-			System.err.println( "Use: java aula3.clients.DeleteUserClient name pwd");
+			System.err.println( "Use: java sd2223.trab1.clients.Users.DeleteUserClient name pwd");
 			return;
 		}
 		Discovery discovery = Discovery.getInstance();

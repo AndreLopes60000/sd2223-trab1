@@ -22,7 +22,7 @@ import sd2223.trab1.clients.Users.GetUserClient;
 public class RestFeedClient extends RestClient implements FeedsService {
     final WebTarget target;
 
-    RestFeedClient(URI serverURI) {
+    public RestFeedClient(URI serverURI) {
         super(serverURI);
         target =  client.target( serverURI ).path( FeedsService.PATH);
     }
