@@ -23,13 +23,11 @@ public class UsersServer {
 
 	public static void main(String[] args) {
 		try {
+			String domain = args[0];
 
 			ResourceConfig config = new ResourceConfig();
-			config.register(UsersResource.class);
+			config.register(new UsersResource(domain));
 			// config.register(CustomLoggingFilter.class);
-
-			String domain = args[0];
-			int num = Integer.parseInt(args[1]);
 
 			String ip = InetAddress.getLocalHost().getHostAddress();
 			String serverURI = String.format(SERVER_URI_FMT, ip, PORT);

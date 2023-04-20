@@ -32,8 +32,8 @@ public class PostMessageClient {
 
         Log.info("Sending request to server.");
 
-      //  var result = new RestFeedClient(URI.create(serverUrl)).postMessage(user, pwd, msg);
-       // System.out.println("Result: " + result);
+        //  var result = new RestFeedClient(URI.create(serverUrl)).postMessage(user, pwd, msg);
+        // System.out.println("Result: " + result);
 
     }
 }

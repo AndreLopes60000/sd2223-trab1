@@ -3,6 +3,7 @@ package sd2223.trab1.clients;
 import jakarta.ws.rs.client.WebTarget;
 import sd2223.trab1.api.Message;
 import sd2223.trab1.api.User;
+import sd2223.trab1.api.java.Result;
 import sd2223.trab1.api.rest.FeedsService;
 
 import java.net.URI;
@@ -18,7 +19,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import sd2223.trab1.api.rest.UsersService;
 
-public class RestFeedClient extends RestClient implements FeedsService {
+public class RestFeedClient extends RestClient implements RestFeed {
     final WebTarget target;
 
     public RestFeedClient(URI serverURI) {
@@ -26,87 +27,73 @@ public class RestFeedClient extends RestClient implements FeedsService {
         target =  client.target( serverURI ).path( FeedsService.PATH);
     }
 
-    private long clt_postMessage(String user, String pwd, Message msg) {
+    private Result<Long> clt_postMessage(String user, String pwd, Message msg) {
         Response r = target.path(user)
                 .queryParam(UsersService.PWD, pwd).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(msg, MediaType.APPLICATION_JSON));
 
-
-        if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
-            return r.readEntity(long.class);
-        else
-            System.out.println("Error, HTTP error status: " + r.getStatus() );
-
-        return 0;
+        return toJavaResult(r, Long.class);
     }
 
-    private void clt_removeFromPersonalFeed(String user, long mid, String pwd) {
+    private Result<Void> clt_removeFromPersonalFeed(String user, long mid, String pwd) {
         Response r = target.path(user+"/"+mid)
                 .queryParam(UsersService.PWD, pwd).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .delete();
 
-        if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
-            System.out.println("Message deleted: " + r.readEntity(Message.class));
-        else
-            System.out.println("Error, HTTP error status: " + r.getStatus() );
+        return toJavaResult(r, Void.class);
     }
 
-    private Message clt_getMessage(String user, long mid) {
+    private Result<Message> clt_getMessage(String user, long mid) {
 
         Response r = target.path( user+"/"+mid ).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get();
 
-        if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
-            return r.readEntity(Message.class);
-        else
-            System.out.println("Error, HTTP error status: " + r.getStatus() );
+        return toJavaResult(r, Message.class);
+    }
 
+    private Result<List<Message>> clt_getMessages(String user, long time) {
         return null;
     }
 
-    private List<Message> clt_getMessages(String user, long time) {
-        return null;
-    }
-
-    private List <String> clt_listSubs(String user) {
+    private Result<List<String>> clt_listSubs(String user) {
         return null;
     }
 
     @Override
-    public long postMessage(String user, String pwd, Message msg) {
+    public Result<Long> postMessage(String user, String pwd, Message msg) {
         return super.reTry( () -> clt_postMessage(user,pwd,msg) );
     }
 
     @Override
-    public void removeFromPersonalFeed(String user, long mid, String pwd) {
+    public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
         //super.reTry( () -> clt_removeFromPersonalFeed(user,mid,pwd));
     }
 
     @Override
-    public Message getMessage(String user, long mid) {
+    public Result<Message> getMessage(String user, long mid) {
         return super.reTry( () -> clt_getMessage(user,mid) );
     }
 
     @Override
-    public List<Message> getMessages(String user, long time) {
+    public Result<List<Message>> getMessages(String user, long time) {
         return super.reTry( () -> clt_getMessages(user,time) );
     }
 
     @Override
-    public void subUser(String user, String userSub, String pwd) {
+    public Result<Void> subUser(String user, String userSub, String pwd) {
 
     }
 
     @Override
-    public void unsubscribeUser(String user, String userSub, String pwd) {
+    public Result<Void> unsubscribeUser(String user, String userSub, String pwd) {
 
     }
 
     @Override
-    public List<String> listSubs(String user) {
+    public  Result<List<String>> listSubs(String user) {
         return super.reTry( () -> clt_listSubs(user) );
     }
 }

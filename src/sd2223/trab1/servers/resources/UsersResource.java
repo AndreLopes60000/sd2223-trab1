@@ -15,15 +15,18 @@ import jakarta.ws.rs.core.Response.Status;
 @Singleton
 public class UsersResource implements UsersService {
 
+	private final String domain;
 	private final Map<String,User> users = new HashMap<>();
 
 	private static Logger Log = Logger.getLogger(UsersResource.class.getName());
 	
-	public UsersResource() {
+	public UsersResource(String domain) {
+		this.domain = domain;
 	}
 
 	@Override
 	public String createUser(User user) {
+
 		Log.info("createUser : " + user);
 		
 		// Check if user data is valid

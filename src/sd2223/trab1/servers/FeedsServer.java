@@ -23,13 +23,12 @@ import java.util.logging.Logger;
 
         public static void main(String[] args) {
             try {
+                String domain = args[0];
+                int serverBase = Integer.parseInt(args[1]);
 
                 ResourceConfig config = new ResourceConfig();
-                config.register(FeedsResource.class);
+                config.register(new FeedsResource(domain, serverBase));
                 // config.register(CustomLoggingFilter.class);
-
-                String domain = args[0];
-                int num = Integer.parseInt(args[1]);
 
                 String ip = InetAddress.getLocalHost().getHostAddress();
                 String serverURI = String.format(SERVER_URI_FMT, ip, PORT);
@@ -37,7 +36,6 @@ import java.util.logging.Logger;
                 Discovery discovery = Discovery.getInstance();
                 discovery.announce(message);
                 JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
-
 
                 Log.info(String.format("%s Server ready @ %s\n", SERVICE, serverURI));
 

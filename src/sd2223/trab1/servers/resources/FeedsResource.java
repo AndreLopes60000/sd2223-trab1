@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.Response;
 import sd2223.trab1.api.Discovery;
 import sd2223.trab1.api.Message;
 import sd2223.trab1.api.rest.FeedsService;
+import sd2223.trab1.clients.RestFeedClient;
 import sd2223.trab1.clients.RestUsersClient;
 import sd2223.trab1.servers.UsersServer;
 
@@ -21,13 +22,20 @@ import java.util.logging.Logger;
 @Singleton
 public class FeedsResource implements FeedsService {
 
+    private static String domain;
+    private static int serverBase;
+
+    private static int num_seq = 0;
+
     private static Logger Log = Logger.getLogger(FeedsResource.class.getName());
     private final Map<String, List<Message>> usersMessages = new HashMap<>();
     private final Map<String,List<String>> usersSubs = new HashMap<>();
 
     //private final Map<String, Pair> cachedMessages= new HashMap<>();
     //private final List<Long> messagesIDs = new ArrayList<Long>();
-    public FeedsResource() {
+    public FeedsResource(String domain, int serverBase) {
+        this.domain = domain;
+        this.serverBase = serverBase;
     }
     @Override
     public long postMessage(String user, String pwd, Message msg) {
@@ -65,8 +73,14 @@ public class FeedsResource implements FeedsService {
         }
         else
             messages.add(msg);
+        msg.setId(this.getId());
 
         return msg.getId();
+    }
+
+    private long getId() {
+        num_seq++;
+        return (long) num_seq * 256 + serverBase;
     }
 
     @Override
@@ -81,7 +95,6 @@ public class FeedsResource implements FeedsService {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-
 
         if (!domain.equals(userDomain)) {
             Log.info("User does not exist.");
@@ -154,10 +167,9 @@ public class FeedsResource implements FeedsService {
         URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + userDomain, 1);
         String serverUrl = uris[0].toString();
 
-        //var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
+        var result = new RestFeedClient(URI.create(serverUrl)).getMessage(user, mid);
 
-
-        return null;
+        return result.value();
     }
 
     @Override
@@ -182,6 +194,7 @@ public class FeedsResource implements FeedsService {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
+
     }
 
     @Override
