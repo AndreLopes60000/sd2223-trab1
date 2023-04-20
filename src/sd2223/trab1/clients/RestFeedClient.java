@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import sd2223.trab1.api.rest.UsersService;
-import sd2223.trab1.clients.Users.GetUserClient;
 
 public class RestFeedClient extends RestClient implements FeedsService {
     final WebTarget target;
@@ -69,9 +68,11 @@ public class RestFeedClient extends RestClient implements FeedsService {
     }
 
     private List<Message> clt_getMessages(String user, long time) {
+        return null;
     }
 
     private List <String> clt_listSubs(String user) {
+        return null;
     }
 
     @Override
@@ -81,7 +82,7 @@ public class RestFeedClient extends RestClient implements FeedsService {
 
     @Override
     public void removeFromPersonalFeed(String user, long mid, String pwd) {
-        super.reTry( () -> clt_removeFromPersonalFeed(user,mid,pwd));
+        //super.reTry( () -> clt_removeFromPersonalFeed(user,mid,pwd));
     }
 
     @Override

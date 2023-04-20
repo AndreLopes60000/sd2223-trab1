@@ -28,18 +28,12 @@ public class PostMessageClient {
 
         String user = args[0];
         String pwd = args[1];
-        String id = args[2];
-        String user = args[3];
-        String domain = args[4];
-        String creationTime = args[5];
-        String text = args[6];
-
-        Message msg = args[2];
+        //Message msg = args[2];
 
         Log.info("Sending request to server.");
 
-        var result = new RestFeedClient(URI.create(serverUrl)).postMessage(user, pwd, msg);
-        System.out.println("Result: " + result);
+      //  var result = new RestFeedClient(URI.create(serverUrl)).postMessage(user, pwd, msg);
+       // System.out.println("Result: " + result);
 
     }
 }
