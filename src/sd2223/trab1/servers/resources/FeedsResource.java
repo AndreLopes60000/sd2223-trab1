@@ -51,12 +51,12 @@ public class FeedsResource implements FeedsService {
         String serverUrl = uris[0].toString();
 
         var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
-        if(result == null) {
+        if(!result.isOK()) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
-        if(result == null){
+        if(!result.isOK()){
             Log.info("Password is incorrect.");
             throw new WebApplicationException( Response.Status.FORBIDDEN );
         }
@@ -199,17 +199,25 @@ public class FeedsResource implements FeedsService {
         String serverUrl = uris[0].toString();
 
         var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
-        if (result == null) {
+        if (!result.isOK()) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-
-        //TODO
-        //the user to be unsubscribed does not exist( Missing NOT FOUND exception)
         result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
-        if (result == null) {
+        if (!result.isOK()) {
             Log.info("Password is incorrect.");
             throw new WebApplicationException(Response.Status.FORBIDDEN);
+        }
+
+        String[] nameAndDomainSub = userSub.split("@");
+        String nameSub = nameAndDomainSub[0];
+        String userSubDomain = nameAndDomainSub[1];
+        uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + userSubDomain, 1);
+        serverUrl = uris[0].toString();
+        result = new RestUsersClient(URI.create(serverUrl)).checkUser(nameSub);
+        if (!result.isOK()) {
+            Log.info("User to be subscribed does not exist.");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
         List<String> subs = usersSubs.get(name);
@@ -218,7 +226,7 @@ public class FeedsResource implements FeedsService {
             subs.add(userSub);
             usersSubs.put(name, subs);
         }
-        else
+        else if (!subs.contains(userSub))
             subs.add(userSub);
 
     }
@@ -245,17 +253,25 @@ public class FeedsResource implements FeedsService {
         String serverUrl = uris[0].toString();
 
         var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
-        if (result == null) {
+        if (!result.isOK()) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-        //TODO
-        //the user to be unsubscribed does not exist( Missing NOT FOUND exception)
-
         result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
-        if (result == null) {
+        if (!result.isOK()) {
             Log.info("Password is incorrect.");
             throw new WebApplicationException(Response.Status.FORBIDDEN);
+        }
+
+        String[] nameAndDomainSub = userSub.split("@");
+        String nameSub = nameAndDomainSub[0];
+        String userSubDomain = nameAndDomainSub[1];
+        uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + userSubDomain, 1);
+        serverUrl = uris[0].toString();
+        result = new RestUsersClient(URI.create(serverUrl)).checkUser(nameSub);
+        if (!result.isOK()) {
+            Log.info("User to be unsubscribed does not exist.");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
         List<String> subs = usersSubs.get(name);
