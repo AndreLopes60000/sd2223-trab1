@@ -1,7 +1,6 @@
 package sd2223.trab1.servers.resources;
 
 import jakarta.inject.Singleton;
-import jakarta.mail.MessageAware;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import sd2223.trab1.api.Discovery;
@@ -10,6 +9,7 @@ import sd2223.trab1.api.rest.FeedsService;
 import sd2223.trab1.clients.RestFeedClient;
 import sd2223.trab1.clients.RestUsersClient;
 import sd2223.trab1.servers.UsersServer;
+
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -205,15 +205,15 @@ public class FeedsResource implements FeedsService {
 
         List<String> subbedUsers = usersSubs.get(name);
         List<Message> userFeed = this.getPersonalFeed(user, time);
+        List<Message> result2;
         for (String sub:subbedUsers) {
             domain = sub.split("@")[1];
             uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
             serverUrl = uris[0].toString();
-            userFeed
+            result2 = new RestFeedClient(URI.create(serverUrl)).getPersonalFeed(user, time).value();
+            userFeed.addAll(result2);
         }
-
-
-        return null;
+        return userFeed;
     }
 
     @Override
