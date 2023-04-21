@@ -20,4 +20,6 @@ public interface RestFeed {
     Result<Void> unsubscribeUser(String user, String userSub, String pwd);
 
     Result<List<String>> listSubs(String user);
+
+    Result<List<String>> getPersonalFeed(String user, long time);
 }

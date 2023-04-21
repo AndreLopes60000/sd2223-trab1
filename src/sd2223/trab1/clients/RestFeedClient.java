@@ -46,7 +46,6 @@ public class RestFeedClient extends RestClient implements RestFeed {
     }
 
     private Result<Message> clt_getMessage(String user, long mid) {
-
         Response r = target.path( user+"/"+mid ).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get();
@@ -55,16 +54,28 @@ public class RestFeedClient extends RestClient implements RestFeed {
     }
 
     private Result<List<Message>> clt_getMessages(String user, long time) {
-        return null;
+        Response r = target.path(user+"/"+time).request()
+                .accept(MediaType.APPLICATION_JSON)
+                .get();
+        return toJavaResult(r, new GenericType<List<Message>>() {});
     }
 
     private Result<List<String>> clt_listSubs(String user) {
+        Response r = target.path("/sub/list/+"+user).request()
+                .accept(MediaType.APPLICATION_JSON)
+                .get();
+        return toJavaResult(r, new GenericType<List<String>>(){});
+    }
+
+    private Result<List<Message>> clt_getPersonalFeed(String user, long time) {
+            Response r = target.path("")
+
         return null;
     }
 
     @Override
     public Result<Long> postMessage(String user, String pwd, Message msg) {
-        return super.reTry( () -> clt_postMessage(user,pwd,msg) );
+        return super.reTry( () -> clt_postMessage(user,pwd,msg));
     }
 
     @Override
@@ -89,11 +100,17 @@ public class RestFeedClient extends RestClient implements RestFeed {
 
     @Override
     public Result<Void> unsubscribeUser(String user, String userSub, String pwd) {
-
+        return null;
     }
 
     @Override
     public  Result<List<String>> listSubs(String user) {
         return super.reTry( () -> clt_listSubs(user) );
     }
+
+    @Override
+    public Result<List<String>> getPersonalFeed(String user, long time) {
+        return super.reTry( () -> clt_getPersonalFeed(user, time);
+    }
+
 }
