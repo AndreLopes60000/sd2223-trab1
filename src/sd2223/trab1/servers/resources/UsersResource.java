@@ -15,14 +15,13 @@ import jakarta.ws.rs.core.Response.Status;
 @Singleton
 public class UsersResource implements UsersService {
 
-	private final String domain;
+
 	private final Map<String,User> users = new HashMap<>();
 
 	private static Logger Log = Logger.getLogger(UsersResource.class.getName());
 	
-	public UsersResource(String domain) {
-		this.domain = domain;
-	}
+	public UsersResource() {
+			}
 
 	@Override
 	public String createUser(User user) {
@@ -41,7 +40,7 @@ public class UsersResource implements UsersService {
 			throw new WebApplicationException( Status.CONFLICT );
 		}
 
-		return user.getName();
+		return user.getName()+"@"+user.getDomain();
 	}
 	
 	@Override
@@ -75,13 +74,13 @@ public class UsersResource implements UsersService {
 		Log.info("updateUser : user = " + name + "; pwd = " + pwd + " ; user = " + user);
 
 		// Check if user data is valid
-		if(user.getName() == null) {
-			Log.info("User object invalid.");
+		if(!user.getName().equals(name)) {
+			Log.info("You cant change name");
 			throw new WebApplicationException(Status.BAD_REQUEST);
 		}
 		// Check if user data is valid
 		if( user.getPwd() == null && user.getDisplayName() == null &&
-				user.getDomain() == null) {
+				user.getName() == null) {
 			Log.info("Empty User object.");
 			throw new WebApplicationException( Status.BAD_REQUEST );
 		}
@@ -99,10 +98,13 @@ public class UsersResource implements UsersService {
 
 		String pass =  user.getPwd();
 		String dName = user.getDisplayName();
+		String sName = user.getName();
 		if (pass != null)
 			storedUser.setPwd(pass);
 		if (dName != null)
 			storedUser.setDisplayName(dName);
+		if(sName != null)
+			storedUser.setName(sName);
 
 		return storedUser;
 	}
@@ -156,9 +158,12 @@ public class UsersResource implements UsersService {
 		return usersFound;
 	}
 
+	/*
 	@Override
 	public User checkUser(String name) {
 		return users.get(name);
 	}
+
+	 */
 
 }

@@ -101,8 +101,8 @@ public interface UsersService {
 	 * @param name name of the user to search
 	 * @return true if exists a user with the given name and false otherwise
 	 */
-	@GET
-	@Path("/{"+NAME+"}")
-	@Produces(MediaType.APPLICATION_JSON)
-	User checkUser(@PathParam(NAME) String name);
+	//@GET
+	//@Path("/check/"+"{"+NAME+"}")
+	//@Produces(MediaType.APPLICATION_JSON)
+	//User checkUser(@PathParam(NAME) String name);
 }

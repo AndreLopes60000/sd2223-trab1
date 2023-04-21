@@ -5,6 +5,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import sd2223.trab1.api.Discovery;
 import sd2223.trab1.api.Message;
+import sd2223.trab1.api.java.Result;
 import sd2223.trab1.api.rest.FeedsService;
 import sd2223.trab1.clients.RestFeedClient;
 import sd2223.trab1.clients.RestUsersClient;
@@ -20,10 +21,9 @@ import java.util.logging.Logger;
 @Singleton
 public class FeedsResource implements FeedsService {
 
-    private static String domain;
-    private static int serverBase;
-
     private static int num_seq = 0;
+    private static final int PORT = 8080;
+    private static final String DELIMITER = "\t";
 
     private static Logger Log = Logger.getLogger(FeedsResource.class.getName());
     private final Map<String, List<Message>> usersMessages = new HashMap<>();
@@ -31,12 +31,11 @@ public class FeedsResource implements FeedsService {
 
     //private final Map<String, Pair> cachedMessages= new HashMap<>();
     //private final List<Long> messagesIDs = new ArrayList<Long>();
-    public FeedsResource(String domain, int serverBase) {
-        this.domain = domain;
-        this.serverBase = serverBase;
+    public FeedsResource() {
     }
     @Override
     public long postMessage(String user, String pwd, Message msg) {
+        System.out.println("ai ui");
 
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
@@ -45,16 +44,25 @@ public class FeedsResource implements FeedsService {
         String messageDomain = msg.getDomain();
 
         Discovery discovery = Discovery.getInstance();
-        URI[] uris = discovery.knownUrisOf(messageDomain+"/"+UsersServer.SERVICE, 1);
+
+        String ip = "";
+        try {
+            ip = InetAddress.getLocalHost().getHostAddress();
+        }
+        catch (Exception e) {
+            Log.severe(e.getMessage());
+        }
+
+        URI[] uris = discovery.knownUrisOf(ip+DELIMITER+PORT, 1);
         String serverUrl = uris[0].toString();
 
-        var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
-        if(!result.isOK()) {
+        var result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
+        if(result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-        result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
-        if(!result.isOK()){
+
+        if(result.error().equals(Result.ErrorCode.FORBIDDEN)){
             Log.info("Password is incorrect.");
             throw new WebApplicationException( Response.Status.FORBIDDEN );
         }
@@ -78,7 +86,8 @@ public class FeedsResource implements FeedsService {
 
     private long getId() {
         num_seq++;
-        return (long) num_seq * 256 + serverBase;
+        return (long) num_seq * 256;
+        //return (long) num_seq * 256 + serverBase;
     }
 
     @Override
@@ -102,15 +111,15 @@ public class FeedsResource implements FeedsService {
         URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
         String serverUrl = uris[0].toString();
 
-        var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
-        if (result == null) {
+        var result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
+        if(result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-        result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
-        if (result == null) {
+
+        if(result.error().equals(Result.ErrorCode.FORBIDDEN)){
             Log.info("Password is incorrect.");
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
+            throw new WebApplicationException( Response.Status.FORBIDDEN );
         }
 
         List<Message> messages = usersMessages.get(name);
@@ -197,23 +206,24 @@ public class FeedsResource implements FeedsService {
         URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
         String serverUrl = uris[0].toString();
 
-        var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
-        if (!result.isOK()) {
+        var result = new RestUsersClient(URI.create(serverUrl)).getUser(name, "");
+        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
         List<String> subbedUsers = usersSubs.get(name);
-        List<Message> userFeed = this.getPersonalFeed(user, time);
+        //List<Message> userFeed = this.getPersonalFeed(user);
         List<Message> result2;
         for (String sub:subbedUsers) {
             domain = sub.split("@")[1];
             uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
             serverUrl = uris[0].toString();
             result2 = new RestFeedClient(URI.create(serverUrl)).getPersonalFeed(user, time).value();
-            userFeed.addAll(result2);
+            //userFeed.addAll(result2);
         }
-        return userFeed;
+        //return userFeed;
+        return null;
     }
 
     @Override
@@ -237,13 +247,12 @@ public class FeedsResource implements FeedsService {
         URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
         String serverUrl = uris[0].toString();
 
-        var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
-        if (!result.isOK()) {
+        var result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
+        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-        result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
-        if (!result.isOK()) {
+        if (result.error().equals(Result.ErrorCode.FORBIDDEN)) {
             Log.info("Password is incorrect.");
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
@@ -253,8 +262,8 @@ public class FeedsResource implements FeedsService {
         String userSubDomain = nameAndDomainSub[1];
         uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + userSubDomain, 1);
         serverUrl = uris[0].toString();
-        result = new RestUsersClient(URI.create(serverUrl)).checkUser(nameSub);
-        if (!result.isOK()) {
+        result = new RestUsersClient(URI.create(serverUrl)).getUser(nameSub, "");
+        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User to be subscribed does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
@@ -291,13 +300,12 @@ public class FeedsResource implements FeedsService {
         URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
         String serverUrl = uris[0].toString();
 
-        var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
-        if (!result.isOK()) {
+        var result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
+        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-        result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
-        if (!result.isOK()) {
+        if (result.error().equals(Result.ErrorCode.FORBIDDEN)) {
             Log.info("Password is incorrect.");
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
@@ -307,8 +315,8 @@ public class FeedsResource implements FeedsService {
         String userSubDomain = nameAndDomainSub[1];
         uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + userSubDomain, 1);
         serverUrl = uris[0].toString();
-        result = new RestUsersClient(URI.create(serverUrl)).checkUser(nameSub);
-        if (!result.isOK()) {
+        result = new RestUsersClient(URI.create(serverUrl)).getUser(nameSub, "");
+        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User to be unsubscribed does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
@@ -341,8 +349,8 @@ public class FeedsResource implements FeedsService {
         URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
         String serverUrl = uris[0].toString();
 
-        var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
-        if (!result.isOK()) {
+        var result = new RestUsersClient(URI.create(serverUrl)).getUser(name, "");
+        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
@@ -353,15 +361,13 @@ public class FeedsResource implements FeedsService {
             return subbedUsers;
     }
 
+    /*
     @Override
-    public List<Message> getPersonalFeed(String user, long time) {
-        List<Message> messages = usersMessages.get(user);
-        List<Message> messagesToReturn = new ArrayList<>();
-        for(Message m: messages){
-            if(m.getCreationTime() <= time)
-                messagesToReturn.add(m);
-        }
-        return messagesToReturn;
+    public List<Message> getPersonalFeed(String user) {
+        return usersMessages.get(user);
     }
+
+     */
+
 
 }

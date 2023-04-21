@@ -70,14 +70,6 @@ public class RestUsersClient extends RestClient implements RestUser {
 				.get();
 		return super.toJavaResult(r, new GenericType<List<User>>() {});
 	}
-	private Result<User> clt_checkUser(String name) {
-		Response r = target.path( name )
-				.request()
-				.accept(MediaType.APPLICATION_JSON)
-				.get();
-
-		return super.toJavaResult(r, User.class);
-	}
 
 	@Override
 	public Result<String> createUser(User user) {
@@ -102,11 +94,5 @@ public class RestUsersClient extends RestClient implements RestUser {
 	public Result<List<User>> searchUsers(String pattern) {
 		return super.reTry(() -> clt_searchUsers(pattern));
 	}
-
-	@Override
-	public Result<User> checkUser(String name) {
-		return super.reTry(() -> clt_checkUser(name));
-	}
-
 
 }

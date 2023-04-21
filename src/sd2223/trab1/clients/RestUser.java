@@ -17,6 +17,4 @@ public interface RestUser {
 
     Result<List<User>> searchUsers(String pattern);
 
-    Result<User> checkUser(String name);
-
 }

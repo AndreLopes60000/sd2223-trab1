@@ -21,7 +21,7 @@ public interface Discovery {
 
 	/**
 	 * Used to announce the URI of the given service name.
-	 * @param serviceURI - the uri of the service
+	 * @param message - the uri of the service
 	 */
 	public void announce(String message);
 
@@ -55,7 +55,7 @@ class DiscoveryImpl implements Discovery {
 	static final int DISCOVERY_ANNOUNCE_PERIOD = 1000;
 
 	// Replace with appropriate values...
-	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("224.0.0.1", 9000);
+	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
 
 	// Used separate the two fields that make up a service announcement.
 	private static final String DELIMITER = "\t";
@@ -79,8 +79,6 @@ class DiscoveryImpl implements Discovery {
 
 	@Override
 	public void announce(String message) {
-		System.out.println("Discovery addr: "+DISCOVERY_ADDR);
-		Log.info(String.format("Starting Discovery announcements on: %s for: %s\n", DISCOVERY_ADDR, message));
 
 		var pktBytes = String.format("%s", message).getBytes();
 		var pkt = new DatagramPacket(pktBytes, pktBytes.length, DISCOVERY_ADDR);
@@ -116,10 +114,6 @@ class DiscoveryImpl implements Discovery {
 	}
 
 	private void startListener() {
-		System.out.printf("Starting discovery on multicast group: %s, port: %d\n", DISCOVERY_ADDR.getAddress(),
-				DISCOVERY_ADDR.getPort());
-		Log.info(String.format("Starting discovery on multicast group: %s, port: %d\n", DISCOVERY_ADDR.getAddress(),
-				DISCOVERY_ADDR.getPort()));
 
 		new Thread(() -> {
 			try (var ms = new MulticastSocket(DISCOVERY_ADDR.getPort())) {
@@ -130,7 +124,6 @@ class DiscoveryImpl implements Discovery {
 						ms.receive(pkt);
 
 						var msg = new String(pkt.getData(), 0, pkt.getLength());
-						Log.info(String.format("Received: %s", msg));
 
 						var parts = msg.split(DELIMITER);
 						if (parts.length == 2) {
