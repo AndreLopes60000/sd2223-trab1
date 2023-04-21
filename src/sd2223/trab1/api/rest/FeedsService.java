@@ -142,7 +142,7 @@ public interface FeedsService {
 	 * Returns a list of all the messages posted by a certain user newer than time
 	 */
 	@GET
-	@Path("/{" + USER +"}")
+	@Path("/{"+USER+"}/{"+TIME+"}")
 	@Produces(MediaType.APPLICATION_JSON)
-	List<Message> getPersonalFeed(@PathParam(USER) String user, long time);
+	List<Message> getPersonalFeed(@PathParam(USER) String user, @PathParam(TIME) long time);
 }

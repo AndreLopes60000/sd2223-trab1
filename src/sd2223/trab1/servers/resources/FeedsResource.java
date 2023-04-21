@@ -209,7 +209,7 @@ public class FeedsResource implements FeedsService {
             domain = sub.split("@")[1];
             uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
             serverUrl = uris[0].toString();
-            userFeed.
+            userFeed
         }
 
 

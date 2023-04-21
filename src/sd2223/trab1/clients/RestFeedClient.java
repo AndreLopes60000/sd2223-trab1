@@ -60,6 +60,24 @@ public class RestFeedClient extends RestClient implements RestFeed {
         return toJavaResult(r, new GenericType<List<Message>>() {});
     }
 
+    private Result<Void> clt_subUser(String user, String userSub, String pwd) {
+        Response r = target.path("/sub/"+user+"/"+userSub)
+                .queryParam(UsersService.PWD, pwd).request()
+                .accept(MediaType.APPLICATION_JSON)
+                .post(Entity.entity(userSub, MediaType.APPLICATION_JSON));
+
+        return toJavaResult(r, Void.class);
+    }
+
+    private Result<Void> clt_unsubscribeUser(String user, String userSub, String pwd) {
+        Response r = target.path("/sub/"+user+"/"+userSub)
+                .queryParam(UsersService.PWD, pwd).request()
+                .accept(MediaType.APPLICATION_JSON)
+                .delete();
+
+        return toJavaResult(r, Void.class);
+    }
+
     private Result<List<String>> clt_listSubs(String user) {
         Response r = target.path("/sub/list/+"+user).request()
                 .accept(MediaType.APPLICATION_JSON)
@@ -68,9 +86,11 @@ public class RestFeedClient extends RestClient implements RestFeed {
     }
 
     private Result<List<Message>> clt_getPersonalFeed(String user, long time) {
-            Response r = target.path("")
+            Response r = target.path("/"+user+"/"+time)
+                    .request().accept(MediaType.APPLICATION_JSON)
+                    .get();
 
-        return null;
+        return toJavaResult(r, new GenericType<List<Message>>(){});
     }
 
     @Override
@@ -80,7 +100,7 @@ public class RestFeedClient extends RestClient implements RestFeed {
 
     @Override
     public Result<Void> removeFromPersonalFeed(String user, long mid, String pwd) {
-        //super.reTry( () -> clt_removeFromPersonalFeed(user,mid,pwd));
+        return super.reTry( () -> clt_removeFromPersonalFeed(user,mid,pwd));
     }
 
     @Override
@@ -95,12 +115,12 @@ public class RestFeedClient extends RestClient implements RestFeed {
 
     @Override
     public Result<Void> subUser(String user, String userSub, String pwd) {
-
+        return super.reTry( () -> clt_subUser(user,userSub, pwd));
     }
 
     @Override
     public Result<Void> unsubscribeUser(String user, String userSub, String pwd) {
-        return null;
+        return super.reTry(() -> clt_unsubscribeUser(user,userSub,pwd));
     }
 
     @Override
@@ -109,8 +129,8 @@ public class RestFeedClient extends RestClient implements RestFeed {
     }
 
     @Override
-    public Result<List<String>> getPersonalFeed(String user, long time) {
-        return super.reTry( () -> clt_getPersonalFeed(user, time);
+    public Result<List<Message>> getPersonalFeed(String user, long time) {
+        return super.reTry( () -> clt_getPersonalFeed(user, time));
     }
 
 }
