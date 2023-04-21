@@ -194,14 +194,76 @@ public class FeedsResource implements FeedsService {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
+        Discovery discovery = Discovery.getInstance();
+        URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
+        String serverUrl = uris[0].toString();
+
+        var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
+        if (result == null) {
+            Log.info("User does not exist.");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+
+        //TODO
+        //the user to be unsubscribed does not exist( Missing NOT FOUND exception)
+        result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
+        if (result == null) {
+            Log.info("Password is incorrect.");
+            throw new WebApplicationException(Response.Status.FORBIDDEN);
+        }
+
+        List<String> subs = usersSubs.get(name);
+        if(subs == null){
+            subs = new ArrayList<>();
+            subs.add(userSub);
+            usersSubs.put(name, subs);
+        }
+        else
+            subs.add(userSub);
 
     }
 
     @Override
     public void unsubscribeUser(String user, String userSub, String pwd) {
+        String[] nameAndDomain = user.split("@");
+        String name = nameAndDomain[0];
+        String userDomain = nameAndDomain[1];
+        String domain = "";
+        try {
+            domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
 
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
 
+        if (!domain.equals(userDomain)) {
+            Log.info("User does not exist.");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        Discovery discovery = Discovery.getInstance();
+        URI[] uris = discovery.knownUrisOf(UsersServer.SERVICE + "/" + domain, 1);
+        String serverUrl = uris[0].toString();
 
+        var result = new RestUsersClient(URI.create(serverUrl)).checkUser(name);
+        if (result == null) {
+            Log.info("User does not exist.");
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        //TODO
+        //the user to be unsubscribed does not exist( Missing NOT FOUND exception)
+
+        result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
+        if (result == null) {
+            Log.info("Password is incorrect.");
+            throw new WebApplicationException(Response.Status.FORBIDDEN);
+        }
+
+        List<String> subs = usersSubs.get(name);
+        if(subs != null){
+            subs.remove(userSub);
+            if(subs.isEmpty())
+                usersSubs.remove(name);
+        }
 
     }
 
