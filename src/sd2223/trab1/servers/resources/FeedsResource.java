@@ -3,6 +3,8 @@ package sd2223.trab1.servers.resources;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
 import sd2223.trab1.api.Discovery;
 import sd2223.trab1.api.Message;
 import sd2223.trab1.api.java.Result;
@@ -22,11 +24,8 @@ import java.util.logging.Logger;
 public class FeedsResource implements FeedsService {
 
     private static int num_seq = 0;
-
+    private static final String SERVER_URI_FMT = "%s:%s";
     private static final String USERS_SERVICE = "users";
-
-    private static final String URI_FMT = "%s:%s";
-
     private static Logger Log = Logger.getLogger(FeedsResource.class.getName());
     private final Map<String, List<Message>> usersMessages = new HashMap<>();
     private final Map<String,List<String>> usersSubs = new HashMap<>();
@@ -44,10 +43,9 @@ public class FeedsResource implements FeedsService {
         String userDomain = nameAndDomain[1];
         //User domain n esta a ser utilizado
         String messageDomain = msg.getDomain();
-
-        String uri = String.format(URI_FMT, userDomain, USERS_SERVICE);
-        Log.info("estou a criar o URI: "+uri);
-        var result = new RestUsersClient(URI.create(uri)).getUser(name, pwd);
+        Discovery discovery = Discovery.getInstance();
+        URI uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
+        var result = new RestUsersClient(uri).getUser(name, pwd);
         if(result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
