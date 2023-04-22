@@ -24,6 +24,7 @@ public class FeedsResource implements FeedsService {
     private static int num_seq = 0;
     private static final int PORT = 8080;
     private static final String DELIMITER = "\t";
+    private static final String SERVER_IP_FMT = "http://%s:%s/rest";
 
     private static Logger Log = Logger.getLogger(FeedsResource.class.getName());
     private final Map<String, List<Message>> usersMessages = new HashMap<>();
@@ -53,9 +54,9 @@ public class FeedsResource implements FeedsService {
             Log.severe(e.getMessage());
         }
 
-        URI[] uris = discovery.knownUrisOf(ip+DELIMITER+PORT, 1);
+        URI[] uris = discovery.knownUrisOf(String.format(SERVER_IP_FMT, ip, PORT), 1);
         String serverUrl = uris[0].toString();
-
+        Log.info("im in feeds resource e o uri que encontri foi: "+ serverUrl);
         var result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
         if(result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User does not exist.");

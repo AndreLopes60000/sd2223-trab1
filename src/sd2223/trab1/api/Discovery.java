@@ -79,6 +79,7 @@ class DiscoveryImpl implements Discovery {
 
 	@Override
 	public void announce(String message) {
+		Log.info("anouncing message: "+ message);
 
 		var pktBytes = String.format("%s", message).getBytes();
 		var pkt = new DatagramPacket(pktBytes, pktBytes.length, DISCOVERY_ADDR);
@@ -103,10 +104,12 @@ class DiscoveryImpl implements Discovery {
 
 	@Override
 	public URI[] knownUrisOf(String serviceName, int minEntries) {
+		Log.info("looking for uri of: "+ serviceName);
 		List<URI> uriList;
 		while(true){
 			uriList = servicesUris.get(serviceName);
 			if(uriList != null && uriList.size() >= minEntries){
+				Log.info("i found the uri: "+ uriList.get(0));
 				break;
 			}
 		}
