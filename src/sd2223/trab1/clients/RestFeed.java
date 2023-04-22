@@ -21,5 +21,7 @@ public interface RestFeed {
 
     Result<List<String>> listSubs(String user);
 
-    Result<List<Message>> getPersonalFeed(String user, long time);
+    void setFollower(String userName, String userFollower);
+
+    void removeFollower(String userName, String userFollower);
 }

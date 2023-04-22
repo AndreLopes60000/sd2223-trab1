@@ -2,14 +2,7 @@ package sd2223.trab1.api.rest;
 
 import java.util.List;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import sd2223.trab1.api.Message;
 import sd2223.trab1.api.User;
@@ -20,6 +13,7 @@ public interface FeedsService {
 	String MID = "mid";
 	String PWD = "pwd";
 	String USER = "user";
+	String USER_FOLLOWER = "follower";
 	String TIME = "time";
 	String DOMAIN = "domain";
 	String USERSUB = "userSub";
@@ -41,7 +35,7 @@ public interface FeedsService {
 	 */
 	@POST
 	@Path("/{" + USER + "}")
-	@Consumes({MediaType.APPLICATION_JSON})
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	long postMessage(@PathParam(USER) String user, @QueryParam(PWD) String pwd, Message msg);
 
@@ -141,11 +135,19 @@ public interface FeedsService {
 	/**
 	 * Returns a list of all the messages posted by a certain user newer than time
 	 */
-	/*
-	@GET
+
+	@PUT
 	@Path("/{"+USER+"}")
-	@Produces(MediaType.APPLICATION_JSON)
-	List<Message> getPersonalFeed(@PathParam(USER) String user);
+	@Consumes(MediaType.APPLICATION_JSON)
+	void setFollower(@PathParam(USER) String user, String follower);
+
+	/**
+	 * Returns a list of all the messages posted by a certain user newer than time
 	 */
+
+	@PUT
+	@Path("/{"+USER+"}/{"+USER_FOLLOWER+"}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	void removeFollower(@PathParam(USER) String userName, @PathParam(USER_FOLLOWER) String follower);
 
 }

@@ -27,16 +27,22 @@ public class FeedsResource implements FeedsService {
     private static final String SERVER_URI_FMT = "%s:%s";
     private static final String USERS_SERVICE = "users";
     private static final String FEEDS_SERVICE = "feeds";
+    private static final String FOLLOWER = "follower";
     private static Logger Log = Logger.getLogger(FeedsResource.class.getName());
     private final Map<String, List<Message>> usersMessages = new HashMap<>();
     private final Map<String,List<String>> usersSubs = new HashMap<>();
+    private final Map<String, List<String>> userFollowers = new HashMap<>();
 
-    //private final Map<String, Pair> cachedMessages= new HashMap<>();
-    //private final List<Long> messagesIDs = new ArrayList<Long>();
     public FeedsResource() {
     }
     @Override
     public long postMessage(String user, String pwd, Message msg) {
+        System.out.println("estou no post message");
+
+        if(user == null || pwd == null || msg == null){
+            Log.info("Null input");
+            throw new WebApplicationException( Response.Status.BAD_REQUEST );
+        }
 
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
@@ -50,24 +56,29 @@ public class FeedsResource implements FeedsService {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
-        if(result.error().equals(Result.ErrorCode.FORBIDDEN)){
+        if(!pwd.equals(FOLLOWER) && result.error().equals(Result.ErrorCode.FORBIDDEN)){
             Log.info("Password is incorrect.");
             throw new WebApplicationException( Response.Status.FORBIDDEN );
         }
 
-        if(user == null || pwd == null || msg == null){
-            Log.info("Null input");
-            throw new WebApplicationException( Response.Status.BAD_REQUEST );
-        }
-        if(msg.getUser().equals(name)) {
-            List<Message> messages = usersMessages.get(name);
-            if (messages == null) {
-                messages = new ArrayList<>();
-                messages.add(msg);
-                usersMessages.put(name, messages);
-            } else
-                messages.add(msg);
-            msg.setId(this.getId());
+        List<Message> messages = usersMessages.get(name);
+        if (messages == null) {
+            messages = new ArrayList<>();
+            messages.add(msg);
+            usersMessages.put(name, messages);
+        } else
+            messages.add(msg);
+        msg.setId(this.getId());
+
+        if(name.equals(msg.getUser())){
+            List<String> followers = userFollowers.get(name);
+            if(followers != null){
+                for (String follower: followers) {
+                    String followerDomain = follower.split("@")[1];
+                    uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, followerDomain, FEEDS_SERVICE), 1)[0];
+                    new RestFeedClient(uri).postMessage(follower, FOLLOWER, msg);
+                }
+            }
         }
 
         return msg.getId();
@@ -81,6 +92,7 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public void removeFromPersonalFeed(String user, long mid, String pwd) {
+        System.out.println("estou no remove from personal feed");
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
         String userDomain = nameAndDomain[1];
@@ -136,6 +148,7 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public Message getMessage(String user, long mid) {
+        System.out.println("estou no get message");
         String name = user.split("@")[0];
         String userDomain = user.split("@")[1];
         String domain = "";
@@ -176,6 +189,7 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public List<Message> getMessages(String user, long time) {
+        System.out.println("estou no get messages");
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
         String userDomain = nameAndDomain[1];
@@ -195,22 +209,29 @@ public class FeedsResource implements FeedsService {
                 Log.info("User does not exist.");
                 throw new WebApplicationException(Response.Status.NOT_FOUND);
             }
-
-            List<String> subbedUsers = usersSubs.get(name);
-            List<Message> messagesToReturn = new ArrayList<>();
-            List<Message> userMessages = this.getMessages(usersMessages.get(name), time);
-            if(userMessages != null)
-                messagesToReturn.addAll(userMessages);
-
-            if (subbedUsers != null) {
-                for (String sub : subbedUsers) {
-                    String subName = sub.split("@")[0];
-                    List<Message> subbedMessages = usersMessages.get(subName);
-                    messagesToReturn.addAll(this.getMessages(subbedMessages, time));
-                }
+            Set<String> usersWithSubs = usersSubs.keySet();
+            Set<String> usersWithFollowers = userFollowers.keySet();
+            for(String user1:usersWithSubs){
+                System.out.println("Sou o user "+ user1+" e sigo:");
+                List<String> subs = usersSubs.get(user1);
+                for (String sub: subs)
+                    System.out.println(sub);
             }
-            return messagesToReturn;
+            for(String user2 : usersWithFollowers){
+                System.out.println("Sou o user "+ user2+" e os meus followers sao:");
+                List<String> subs = userFollowers.get(user2);
+                for (String sub: subs)
+                    System.out.println(sub);
+            }
+
+            return this.getMessages(usersMessages.get(name),time);
         }
+
+
+
+
+
+
         uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, FEEDS_SERVICE), 1)[0];
         var result = new RestFeedClient(uri).getMessages(user, time);
         return result.value();
@@ -219,6 +240,7 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public void subUser(String user, String userSub, String pwd) {
+        System.out.println("estou no sub user");
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
         String userDomain = nameAndDomain[1];
@@ -266,10 +288,14 @@ public class FeedsResource implements FeedsService {
         else if (!subs.contains(userSub))
             subs.add(userSub);
 
+        uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, USERS_SERVICE), 1)[0];
+        new RestFeedClient(uri).setFollower(nameSub, user);
+
     }
 
     @Override
     public void unsubscribeUser(String user, String userSub, String pwd) {
+        System.out.println("estou no unsub user");
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
         String userDomain = nameAndDomain[1];
@@ -314,11 +340,14 @@ public class FeedsResource implements FeedsService {
             if(subs.isEmpty())
                 usersSubs.remove(name);
         }
+        uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, USERS_SERVICE), 1)[0];
+        new RestFeedClient(uri).removeFollower(nameSub, user);
 
     }
 
     @Override
     public List<String> listSubs(String user) {
+        System.out.println("estou no list subs");
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
         String userDomain = nameAndDomain[1];
@@ -347,13 +376,24 @@ public class FeedsResource implements FeedsService {
             return subbedUsers;
     }
 
-    /*
     @Override
-    public List<Message> getPersonalFeed(String user) {
-        return usersMessages.get(user);
+    public void setFollower(String userName, String follower) {
+        System.out.println("Penis1");
+        List<String> followers = userFollowers.get(userName);
+        if(followers==null) {
+            followers = new ArrayList<>();
+            userFollowers.put(userName, followers);
+        }
+        followers.add(follower);
     }
 
-     */
+    @Override
+    public void removeFollower(String userName, String follower) {
+        System.out.println("Penis2");
+        List<String> followers = userFollowers.get(userName);
+        if(followers != null)
+            followers.remove(follower);
+    }
 
     private List<Message> getMessages(List<Message> messages, long time){
         List<Message> messagesToReturn = new ArrayList<>();
@@ -365,7 +405,6 @@ public class FeedsResource implements FeedsService {
             if(m.getCreationTime() < time)
                 messagesToReturn.add(m);
         }
-
         return messagesToReturn;
     }
 

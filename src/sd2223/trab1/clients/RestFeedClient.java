@@ -85,12 +85,22 @@ public class RestFeedClient extends RestClient implements RestFeed {
         return toJavaResult(r, new GenericType<List<String>>(){});
     }
 
-    private Result<List<Message>> clt_getPersonalFeed(String user, long time) {
-            Response r = target.path("/"+user+"/"+time)
-                    .request().accept(MediaType.APPLICATION_JSON)
-                    .get();
 
-        return toJavaResult(r, new GenericType<List<Message>>(){});
+    private Result<Void> clt_addFollower(String userName, String userFollower) {
+        System.out.println("im trying to add a follower");
+        Response r = target.path(userName).request()
+                .accept(MediaType.APPLICATION_JSON)
+                .put(Entity.entity(userFollower, MediaType.APPLICATION_JSON));
+        return toJavaResult(r, Void.class);
+    }
+
+
+    private Result<Void> clt_removeFollower(String userName, String userFollower) {
+        System.out.println("im trying to remove a follower");
+        Response r = target.path(userName+"/"+userFollower).request()
+                .accept(MediaType.APPLICATION_JSON)
+                .get();
+        return toJavaResult(r, Void.class);
     }
 
     @Override
@@ -129,8 +139,14 @@ public class RestFeedClient extends RestClient implements RestFeed {
     }
 
     @Override
-    public Result<List<Message>> getPersonalFeed(String user, long time) {
-        return super.reTry( () -> clt_getPersonalFeed(user, time));
+    public void setFollower(String userName, String userFollower) {
+        super.reTry( () -> clt_addFollower(userName, userFollower));
+    }
+
+
+    @Override
+    public void removeFollower(String userName, String userFollower) {
+        super.reTry( () -> clt_removeFollower(userName, userFollower));
     }
 
 }
