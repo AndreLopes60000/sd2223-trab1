@@ -41,7 +41,7 @@ public interface FeedsService {
 	 */
 	@POST
 	@Path("/{" + USER + "}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@Consumes({MediaType.APPLICATION_JSON})
 	@Produces(MediaType.APPLICATION_JSON)
 	long postMessage(@PathParam(USER) String user, @QueryParam(PWD) String pwd, Message msg);
 
