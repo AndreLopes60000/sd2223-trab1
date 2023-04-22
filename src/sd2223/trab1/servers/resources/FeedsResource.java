@@ -22,9 +22,10 @@ import java.util.logging.Logger;
 public class FeedsResource implements FeedsService {
 
     private static int num_seq = 0;
-    private static final int PORT = 8080;
-    private static final String DELIMITER = "\t";
-    private static final String SERVER_IP_FMT = "http://%s:%s/rest";
+
+    private static final String USERS_SERVICE = "users";
+
+    private static final String URI_FMT = "%s:%s";
 
     private static Logger Log = Logger.getLogger(FeedsResource.class.getName());
     private final Map<String, List<Message>> usersMessages = new HashMap<>();
@@ -44,20 +45,9 @@ public class FeedsResource implements FeedsService {
         //User domain n esta a ser utilizado
         String messageDomain = msg.getDomain();
 
-        Discovery discovery = Discovery.getInstance();
-
-        String ip = "";
-        try {
-            ip = InetAddress.getLocalHost().getHostAddress();
-        }
-        catch (Exception e) {
-            Log.severe(e.getMessage());
-        }
-
-        URI[] uris = discovery.knownUrisOf(String.format(SERVER_IP_FMT, ip, PORT), 1);
-        String serverUrl = uris[0].toString();
-        Log.info("im in feeds resource e o uri que encontri foi: "+ serverUrl);
-        var result = new RestUsersClient(URI.create(serverUrl)).getUser(name, pwd);
+        String uri = String.format(URI_FMT, userDomain, USERS_SERVICE);
+        Log.info("estou a criar o URI: "+uri);
+        var result = new RestUsersClient(URI.create(uri)).getUser(name, pwd);
         if(result.error().equals(Result.ErrorCode.NOT_FOUND)) {
             Log.info("User does not exist.");
             throw new WebApplicationException(Response.Status.NOT_FOUND);
