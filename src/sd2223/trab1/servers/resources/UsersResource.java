@@ -1,19 +1,26 @@
 package sd2223.trab1.servers.resources;
 
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+import sd2223.trab1.api.Discovery;
 import sd2223.trab1.api.User;
 import sd2223.trab1.api.rest.UsersService;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
+import sd2223.trab1.clients.RestFeedClient;
 
 @Singleton
 public class UsersResource implements UsersService {
 
 
+	private static final String SERVER_URI_FMT = "%s:%s";
+	private static final String FEEDS_SERVICE = "feeds";
 	private final Map<String,User> users = new HashMap<>();
 
 	private static Logger Log = Logger.getLogger(UsersResource.class.getName());
@@ -113,10 +120,21 @@ public class UsersResource implements UsersService {
 			if (storedUser == null) {
 				throw new WebApplicationException(Status.NOT_FOUND);
 			}
-			//Check if the password is correct
 			if (!storedUser.getPwd().equals(pwd)) {
 				throw new WebApplicationException(Status.FORBIDDEN);
 			}
+		}
+		String domain;
+		try {
+			domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
+		} catch (UnknownHostException e) {
+			throw new RuntimeException(e);
+		}
+		Discovery discovery = Discovery.getInstance();
+		URI uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, domain, FEEDS_SERVICE), 1)[0];
+		new RestFeedClient(uri).removeFromPersonalFeed(name, -1,null);
+
+		synchronized (this){
 			return users.remove(name);
 		}
 	}
