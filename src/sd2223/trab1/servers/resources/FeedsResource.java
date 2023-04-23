@@ -159,7 +159,7 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public Message getMessage(String user, long mid) {
-        System.out.println("estou no get message");
+        System.out.println("estou no get message com o user "+user);
         String name = user.split("@")[0];
         String userDomain = user.split("@")[1];
         String domain = "";
@@ -200,6 +200,7 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public List<Message> getMessages(String user, long time) {
+
         System.out.println("estou no get messages do user "+user);
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
@@ -213,19 +214,15 @@ public class FeedsResource implements FeedsService {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("Estou no domain: "+domain);
         if(domain.equals(userDomain)) {
-            System.out.println("User e domain com domains matching");
-            System.out.println(uri.toString());
             uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
+            System.out.println(uri.toString());
 
             var result = new RestUsersClient(uri).getUser(name, "");
             if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
-                Log.info("User does not exist.");
                 throw new WebApplicationException(Response.Status.NOT_FOUND);
             }
 
-            System.out.println("Sou o user "+ user+" e sigo:");
             List<String> subs = usersSubs.get(user);
             if(subs!=null)
             for (String sub: subs)
@@ -235,8 +232,6 @@ public class FeedsResource implements FeedsService {
         }
 
         uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, FEEDS_SERVICE), 1)[0];
-        System.out.println("O uri criado is: "+uri.toString());
-        System.out.println("o dominio do user é "+userDomain);
         var result = new RestFeedClient(uri).getMessages(user, time);
         if (result.isOK())
             return result.value();
@@ -367,11 +362,6 @@ public class FeedsResource implements FeedsService {
 
     @Override
     public List<String> listSubs(String user) {
-
-
-
-
-
         System.out.println("estou no list subs");
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
