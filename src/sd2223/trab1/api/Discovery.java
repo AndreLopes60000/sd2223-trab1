@@ -23,7 +23,7 @@ public interface Discovery {
 	 * Used to announce the URI of the given service name.
 	 * @param message - the uri of the service
 	 */
-	public void announce(String message);
+	public void announce(String serviceName, String serviceUri);
 
 	/**
 	 * Get discovered URIs for a given service name
@@ -78,9 +78,9 @@ class DiscoveryImpl implements Discovery {
 	}
 
 	@Override
-	public void announce(String message) {
+	public void announce(String serviceName, String serviceUri) {
 
-		var pktBytes = String.format("%s", message).getBytes();
+		var pktBytes = String.format("%s%s%s", serviceName, DELIMITER, serviceUri).getBytes();
 		var pkt = new DatagramPacket(pktBytes, pktBytes.length, DISCOVERY_ADDR);
 
 		// start thread to send periodic announcements
@@ -128,8 +128,8 @@ class DiscoveryImpl implements Discovery {
 						var parts = msg.split(DELIMITER);
 						if (parts.length == 2) {
 							// TODO: complete by storing the decoded announcements...
-							var serviceName = parts[1];
-							var uri = URI.create(parts[0]);
+							var serviceName = parts[0];
+							var uri = URI.create(parts[1]);
 
 							if(servicesUris.containsKey(serviceName))
 								addUrisToList(serviceName, uri);
