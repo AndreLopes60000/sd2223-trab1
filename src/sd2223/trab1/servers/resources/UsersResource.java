@@ -31,10 +31,11 @@ public class UsersResource implements UsersService {
 		}
 
 		// Insert user, checking if name already exists
-		if (users.putIfAbsent(user.getName(), user) != null) {
-			throw new WebApplicationException(Status.CONFLICT);
+		synchronized (this) {
+			if (users.putIfAbsent(user.getName(), user) != null) {
+				throw new WebApplicationException(Status.CONFLICT);
+			}
 		}
-
 		return user.getName()+"@"+user.getDomain();
 	}
 	
@@ -45,19 +46,20 @@ public class UsersResource implements UsersService {
 			if(name == null || pwd == null) {
 				throw new WebApplicationException( Status.BAD_REQUEST );
 			}
-			
-			User user = users.get(name);			
-			// Check if user exists 
-			if( user == null ) {
-				throw new WebApplicationException( Status.NOT_FOUND );
+			synchronized (this) {
+				User user = users.get(name);
+				// Check if user exists
+				if (user == null) {
+					throw new WebApplicationException(Status.NOT_FOUND);
+				}
+
+				//Check if the password is correct
+				if (!user.getPwd().equals(pwd)) {
+					throw new WebApplicationException(Status.FORBIDDEN);
+				}
+
+				return user;
 			}
-			
-			//Check if the password is correct
-			if( !user.getPwd().equals( pwd)) {
-				throw new WebApplicationException( Status.FORBIDDEN );
-			}
-			
-			return user;
 		}
 
 	@Override
@@ -73,28 +75,30 @@ public class UsersResource implements UsersService {
 			throw new WebApplicationException( Status.BAD_REQUEST );
 		}
 		// Check if user exists
-		User storedUser = users.get(name);
-		if(storedUser == null){
-			throw new WebApplicationException( Status.NOT_FOUND );
+		synchronized (this) {
+			User storedUser = users.get(name);
+			if (storedUser == null) {
+				throw new WebApplicationException(Status.NOT_FOUND);
+			}
+			//Check if the password is correct
+			if (!storedUser.getPwd().equals(pwd)) {
+				throw new WebApplicationException(Status.FORBIDDEN);
+			}
+
+			String pass = user.getPwd();
+			String dName = user.getDisplayName();
+			String sName = user.getName();
+
+			if (pass != null)
+				storedUser.setPwd(pass);
+			if (dName != null)
+				storedUser.setDisplayName(dName);
+			if (sName != null)
+				storedUser.setName(sName);
+
+
+			return storedUser;
 		}
-		//Check if the password is correct
-		if(!storedUser.getPwd().equals(pwd)){
-			throw new WebApplicationException( Status.FORBIDDEN );
-		}
-
-		String pass =  user.getPwd();
-		String dName = user.getDisplayName();
-		String sName = user.getName();
-
-		if (pass != null)
-			storedUser.setPwd(pass);
-		if (dName != null)
-			storedUser.setDisplayName(dName);
-		if (sName != null)
-			storedUser.setName(sName);
-
-
-		return storedUser;
 	}
 
 	@Override
@@ -104,47 +108,51 @@ public class UsersResource implements UsersService {
 			throw new WebApplicationException( Status.BAD_REQUEST );
 		}
 		// Check if user exists
-		User storedUser = users.get(name);
-		if(storedUser == null){
-			throw new WebApplicationException( Status.NOT_FOUND );
+		synchronized (this) {
+			User storedUser = users.get(name);
+			if (storedUser == null) {
+				throw new WebApplicationException(Status.NOT_FOUND);
+			}
+			//Check if the password is correct
+			if (!storedUser.getPwd().equals(pwd)) {
+				throw new WebApplicationException(Status.FORBIDDEN);
+			}
+			return users.remove(name);
 		}
-		//Check if the password is correct
-		if(!storedUser.getPwd().equals(pwd)){
-			throw new WebApplicationException( Status.FORBIDDEN );
-		}
-		return users.remove(name);
 	}
 
 	@Override
 	public List<User> searchUsers(String pattern) {
-		if(pattern == null){
-			throw new WebApplicationException( Status.BAD_REQUEST );
+		if (pattern == null) {
+			throw new WebApplicationException(Status.BAD_REQUEST);
 		}
 
 		List<User> usersFound = new ArrayList<>();
-		if(users.isEmpty())
-			return usersFound;
-		Predicate<User> isNull = obj -> obj == null;
-		Collection<User> usersCollection = users.values();
-		usersCollection.removeIf(isNull);
-		User[] allUsers = usersCollection.toArray(new User[usersCollection.size()]);
-		if(pattern.equals("")){
-			for (User u: allUsers) {
-				if(u != null) {
-					User newUser = new User(u.getName(), "", u.getDomain(), u.getDisplayName());
-					usersFound.add(newUser);
+		synchronized (this) {
+			if (users.isEmpty())
+				return usersFound;
+			Predicate<User> isNull = obj -> obj == null;
+			Collection<User> usersCollection = users.values();
+			usersCollection.removeIf(isNull);
+			User[] allUsers = usersCollection.toArray(new User[usersCollection.size()]);
+			if (pattern.equals("")) {
+				for (User u : allUsers) {
+					if (u != null) {
+						User newUser = new User(u.getName(), "", u.getDomain(), u.getDisplayName());
+						usersFound.add(newUser);
+					}
 				}
+				return usersFound;
+			}
+
+			for (User u : allUsers) {
+				if (u != null)
+					if (u.getName().toLowerCase().contains(pattern.toLowerCase())) {
+						User newUser = new User(u.getName(), "", u.getDomain(), u.getDisplayName());
+						usersFound.add(newUser);
+					}
 			}
 			return usersFound;
 		}
-
-		for (User u: allUsers) {
-			if(u != null)
-			if(u.getName().toLowerCase().contains(pattern.toLowerCase())) {
-				User newUser = new User(u.getName(),"",u.getDomain(), u.getDisplayName());
-				usersFound.add(newUser);
-			}
-		}
-		return usersFound;
 	}
 }

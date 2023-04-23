@@ -73,24 +73,26 @@ public class FeedsResource implements FeedsService {
             Log.info("Password is incorrect.");
             throw new WebApplicationException( Response.Status.FORBIDDEN );
         }
-
-        List<Message> messages = usersMessages.get(name);
-        if (messages == null) {
-            messages = new ArrayList<>();
-            messages.add(msg);
-            usersMessages.put(name, messages);
-        } else
-            messages.add(msg);
-        if(msg.getId() == -1)
-            msg.setId(this.getId());
-
-        if(name.equals(msg.getUser())){
-            List<String> followers = userFollowers.get(name);
-            if(followers != null){
-                for (String follower: followers) {
-                    String followerDomain = follower.split("@")[1];
-                    uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, followerDomain, FEEDS_SERVICE), 1)[0];
-                    new RestFeedClient(uri).postMessage(follower, FOLLOWER, msg);
+        synchronized (this) {
+            List<Message> messages = usersMessages.get(name);
+            if (messages == null) {
+                messages = new ArrayList<>();
+                messages.add(msg);
+                usersMessages.put(name, messages);
+            } else
+                messages.add(msg);
+            if (msg.getId() == -1)
+                msg.setId(this.getId());
+        }
+        if(name.equals(msg.getUser())) {
+            synchronized (this) {
+                List<String> followers = userFollowers.get(name);
+                if (followers != null) {
+                    for (String follower : followers) {
+                        String followerDomain = follower.split("@")[1];
+                        uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, followerDomain, FEEDS_SERVICE), 1)[0];
+                        new RestFeedClient(uri).postMessage(follower, FOLLOWER, msg);
+                    }
                 }
             }
         }
@@ -133,19 +135,19 @@ public class FeedsResource implements FeedsService {
             Log.info("Password is incorrect.");
             throw new WebApplicationException( Response.Status.FORBIDDEN );
         }
-
-        List<Message> messages = usersMessages.get(name);
-        if (messages == null) {
-            Log.info("Message does not exist.");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        synchronized (this) {
+            List<Message> messages = usersMessages.get(name);
+            if (messages == null) {
+                Log.info("Message does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            Message m = getMsgFromList(mid, messages);
+            if (m == null) {
+                Log.info("Message does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            messages.remove(m);
         }
-        Message m = getMsgFromList(mid, messages);
-        if (m == null) {
-            Log.info("Message does not exist.");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        messages.remove(m);
-
     }
     private Message getMsgFromList(long mid, List<Message> messages) {
         for (Message m : messages) {
@@ -171,25 +173,27 @@ public class FeedsResource implements FeedsService {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        if(domain.equals(userDomain)){
+        if(domain.equals(userDomain)) {
             uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
             var result = new RestUsersClient(uri).getUser(name, "");
-            if(result.error().equals(Result.ErrorCode.NOT_FOUND)){
+            if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
                 Log.info("User does not exist.");
                 throw new WebApplicationException(Response.Status.NOT_FOUND);
             }
+            synchronized (this) {
+                List<Message> messages = usersMessages.get(name);
+                if (messages == null) {
+                    Log.info("Message does not exist.");
+                    throw new WebApplicationException(Response.Status.NOT_FOUND);
+                }
 
-            List<Message> messages = usersMessages.get(name);
-            if (messages == null) {
-                Log.info("Message does not exist.");
-                throw new WebApplicationException(Response.Status.NOT_FOUND);
+                Message m = getMsgFromList(mid, messages);
+                if (m == null) {
+                    Log.info("Message does not exist.");
+                    throw new WebApplicationException(Response.Status.NOT_FOUND);
+                }
+                return m;
             }
-            Message m = getMsgFromList(mid, messages);
-            if (m == null) {
-                Log.info("Message does not exist.");
-                throw new WebApplicationException(Response.Status.NOT_FOUND);
-            }
-            return m;
         }
 
         uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, FEEDS_SERVICE), 1)[0];
@@ -216,21 +220,21 @@ public class FeedsResource implements FeedsService {
         System.out.println("Estou no domain: "+domain);
         if(domain.equals(userDomain)) {
             System.out.println("User e domain com domains matching");
-            System.out.println(uri.toString());
             uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
+
 
             var result = new RestUsersClient(uri).getUser(name, "");
             if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
                 Log.info("User does not exist.");
                 throw new WebApplicationException(Response.Status.NOT_FOUND);
             }
-
-            System.out.println("Sou o user "+ user+" e sigo:");
+            synchronized (this){
+            System.out.println("Sou o user " + user + " e sigo:");
             List<String> subs = usersSubs.get(user);
-            if(subs!=null)
-            for (String sub: subs)
-                System.out.println(sub);
-
+            if (subs != null)
+                for (String sub : subs)
+                    System.out.println(sub);
+            }
             return this.getMessages(usersMessages.get(name),time);
         }
 
@@ -285,16 +289,16 @@ public class FeedsResource implements FeedsService {
                 Log.info("User to be subscribed does not exist.");
                 throw new WebApplicationException(Response.Status.NOT_FOUND);
             }
-            List<String> subs = usersSubs.get(name);
-            if (subs == null) {
-                subs = new ArrayList<>();
-                subs.add(userSub);
-                usersSubs.put(name, subs);
+            synchronized (this) {
+                List<String> subs = usersSubs.get(name);
+                if (subs == null) {
+                    subs = new ArrayList<>();
+                    subs.add(userSub);
+                    usersSubs.put(name, subs);
+                } else if (!subs.contains(userSub)) {
+                    subs.add(userSub);
+                }
             }
-            else if (!subs.contains(userSub)) {
-                subs.add(userSub);
-            }
-
             if(!userSubDomain.equals(domain)){
                 uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, FEEDS_SERVICE), 1)[0];
                 new RestFeedClient(uri).subUser(user, userSub, "");
@@ -348,12 +352,14 @@ public class FeedsResource implements FeedsService {
                 Log.info("User to be unsubscribed does not exist.");
                 throw new WebApplicationException(Response.Status.NOT_FOUND);
             }
-            List<String> subs = usersSubs.get(name);
-            if (subs != null) {
-                subs.remove(userSub);
-                if (subs.isEmpty())
-                    usersSubs.remove(name);
-
+            synchronized (this) {
+                List<String> subs = usersSubs.get(name);
+                if (subs != null) {
+                    subs.remove(userSub);
+                    if (subs.isEmpty())
+                        usersSubs.remove(name);
+                }
+            }
             if(!userSubDomain.equals(domain)){
                 uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, FEEDS_SERVICE), 1)[0];
                 new RestFeedClient(uri).unsubscribeUser(user, userSub, "");
@@ -363,15 +369,8 @@ public class FeedsResource implements FeedsService {
             }
         }
 
-    }
-
     @Override
     public List<String> listSubs(String user) {
-
-
-
-
-
         System.out.println("estou no list subs");
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
@@ -402,7 +401,7 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
-    public void setFollower(String userName, String follower) {
+    public synchronized void setFollower(String userName, String follower) {
         System.out.println("Penis1");
         List<String> followers = userFollowers.get(userName);
         if(followers==null) {
@@ -414,7 +413,7 @@ public class FeedsResource implements FeedsService {
     }
 
     @Override
-    public void removeFollower(String userName, String follower) {
+    public synchronized void removeFollower(String userName, String follower) {
         System.out.println("Penis2");
         List<String> followers = userFollowers.get(userName);
         if(followers != null)
