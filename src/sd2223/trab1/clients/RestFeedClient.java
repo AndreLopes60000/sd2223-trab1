@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import sd2223.trab1.api.rest.UsersService;
+import sd2223.trab1.servers.resources.FeedsResource;
 
 public class RestFeedClient extends RestClient implements RestFeed {
     final WebTarget target;
@@ -46,6 +47,7 @@ public class RestFeedClient extends RestClient implements RestFeed {
     }
 
     private Result<Message> clt_getMessage(String user, long mid) {
+        System.out.println("estsou no get message com o user "+ user);
         Response r = target.path( user+"/"+mid ).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get();
@@ -55,7 +57,8 @@ public class RestFeedClient extends RestClient implements RestFeed {
 
     private Result<List<Message>> clt_getMessages(String user, long time) {
         System.out.println("estou no clt getMessages");
-        Response r = target.path(user+"/"+time).request()
+        Response r = target.path(user)
+                .queryParam(FeedsService.TIME, time).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get();
         return toJavaResult(r, new GenericType<List<Message>>() {});

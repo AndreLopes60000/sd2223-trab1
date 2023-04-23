@@ -42,6 +42,7 @@ import java.util.logging.Logger;
                 JdkHttpServerFactory.createHttpServer(URI.create(serverIP), config);
 
                 Log.info(String.format("%s Server ready @ %s\n", SERVICE, serviceName));
+                Log.info("o http q foi guardado e: "+serverIP);
 
                 // More code can be executed here...
             } catch (Exception e) {
