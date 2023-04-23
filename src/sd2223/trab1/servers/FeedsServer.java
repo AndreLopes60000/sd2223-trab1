@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 
                 ResourceConfig config = new ResourceConfig();
                 config.register(FeedsResource.class);
+                new ServerData().setBase(serverBase);
                 // config.register(CustomLoggingFilter.class);
 
                 String ip = InetAddress.getLocalHost().getHostAddress();

@@ -54,6 +54,7 @@ public class RestFeedClient extends RestClient implements RestFeed {
     }
 
     private Result<List<Message>> clt_getMessages(String user, long time) {
+        System.out.println("estou no clt getMessages");
         Response r = target.path(user+"/"+time).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get();

@@ -43,7 +43,7 @@ public class RestClient {
 		this.client = ClientBuilder.newClient(config);
 	}
 
-	protected <T> Result<T> reTry(Supplier<Result<T>> func) {
+	protected synchronized  <T> Result<T> reTry(Supplier<Result<T>> func) {
 		for (int i = 0; i < MAX_RETRIES; i++)
 			try {
 				return func.get();

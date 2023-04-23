@@ -11,9 +11,11 @@ import sd2223.trab1.api.java.Result;
 import sd2223.trab1.api.rest.FeedsService;
 import sd2223.trab1.clients.RestFeedClient;
 import sd2223.trab1.clients.RestUsersClient;
+import sd2223.trab1.servers.ServerData;
 import sd2223.trab1.servers.UsersServer;
 
 
+import javax.sound.midi.SysexMessage;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -33,23 +35,33 @@ public class FeedsResource implements FeedsService {
     private final Map<String,List<String>> usersSubs = new HashMap<>();
     private final Map<String, List<String>> userFollowers = new HashMap<>();
 
+
     public FeedsResource() {
     }
     @Override
     public long postMessage(String user, String pwd, Message msg) {
-        System.out.println("estou no post message");
 
         if(user == null || pwd == null || msg == null){
             Log.info("Null input");
             throw new WebApplicationException( Response.Status.BAD_REQUEST );
         }
+        String domain = "";
+        try {
+            domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
 
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
         String userDomain = nameAndDomain[1];
+        if(!pwd.equals(FOLLOWER) && !domain.equals(userDomain)){
+            Log.info("You are not contacting the right domain");
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+
         Discovery discovery = Discovery.getInstance();
         URI uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
-        System.out.println("o domain do user é: "+ userDomain+" e o uri encontrado é: "+ uri.toString());
         var result = new RestUsersClient(uri).getUser(name, pwd);
 
         if(result.error().equals(Result.ErrorCode.NOT_FOUND)) {
@@ -82,14 +94,12 @@ public class FeedsResource implements FeedsService {
                 }
             }
         }
-
         return msg.getId();
     }
 
     private long getId() {
         num_seq++;
-        return (long) num_seq * 256 + 1;
-        //return (long) num_seq * 256 + serverBase;
+        return (long) num_seq * 256 + ServerData.getBase();
     }
 
     @Override
@@ -203,14 +213,17 @@ public class FeedsResource implements FeedsService {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
+        System.out.println("Estou no domain: "+domain);
         if(domain.equals(userDomain)) {
+            System.out.println("User e domain com domains matching");
+            System.out.println(uri.toString());
             uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
+
             var result = new RestUsersClient(uri).getUser(name, "");
             if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
                 Log.info("User does not exist.");
                 throw new WebApplicationException(Response.Status.NOT_FOUND);
             }
-
 
             System.out.println("Sou o user "+ user+" e sigo:");
             List<String> subs = usersSubs.get(user);
@@ -218,125 +231,147 @@ public class FeedsResource implements FeedsService {
             for (String sub: subs)
                 System.out.println(sub);
 
-
-
             return this.getMessages(usersMessages.get(name),time);
         }
 
         uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, FEEDS_SERVICE), 1)[0];
+        System.out.println("O uri criado is: "+uri.toString());
+        System.out.println("o dominio do user é "+userDomain);
         var result = new RestFeedClient(uri).getMessages(user, time);
-        return result.value();
+        if (result.isOK())
+            return result.value();
+        return new ArrayList<>();
     }
 
     @Override
     public void subUser(String user, String userSub, String pwd) {
-        System.out.println("estou no sub user");
-        String[] nameAndDomain = user.split("@");
-        String name = nameAndDomain[0];
-        String userDomain = nameAndDomain[1];
-        String domain = "";
-        try {
-            domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
-
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (!domain.equals(userDomain)) {
-            Log.info("User does not exist.");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        Discovery discovery = Discovery.getInstance();
-        URI uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
-        var result = new RestUsersClient(uri).getUser(name, pwd);
-
-        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
-            Log.info("User does not exist.");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        if (result.error().equals(Result.ErrorCode.FORBIDDEN)) {
-            Log.info("Password is incorrect.");
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
-        }
-
-        String[] nameAndDomainSub = userSub.split("@");
-        String nameSub = nameAndDomainSub[0];
-        String userSubDomain = nameAndDomainSub[1];
-        uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, USERS_SERVICE), 1)[0];
-        result = new RestUsersClient(uri).getUser(nameSub, "");
-        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
-            Log.info("User to be subscribed does not exist.");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-
-        List<String> subs = usersSubs.get(name);
-        if(subs == null){
-            subs = new ArrayList<>();
-            subs.add(userSub);
-            usersSubs.put(name, subs);
+        if(pwd.equals(""))
             this.setFollower(userSub.split("@")[0], user);
+        else {
+            String[] nameAndDomain = user.split("@");
+            String name = nameAndDomain[0];
+            String userDomain = nameAndDomain[1];
+            String domain = "";
+            try {
+                domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
+
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (!domain.equals(userDomain)) {
+                Log.info("User does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            Discovery discovery = Discovery.getInstance();
+            URI uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
+            var result = new RestUsersClient(uri).getUser(name, pwd);
+
+            if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
+                Log.info("User does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            if (result.error().equals(Result.ErrorCode.FORBIDDEN)) {
+                Log.info("Password is incorrect.");
+                throw new WebApplicationException(Response.Status.FORBIDDEN);
+            }
+
+            String[] nameAndDomainSub = userSub.split("@");
+            String nameSub = nameAndDomainSub[0];
+            String userSubDomain = nameAndDomainSub[1];
+            uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, USERS_SERVICE), 1)[0];
+            result = new RestUsersClient(uri).getUser(nameSub, "");
+            if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
+                Log.info("User to be subscribed does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            List<String> subs = usersSubs.get(name);
+            if (subs == null) {
+                subs = new ArrayList<>();
+                subs.add(userSub);
+                usersSubs.put(name, subs);
+            }
+            else if (!subs.contains(userSub)) {
+                subs.add(userSub);
+            }
+
+            if(!userSubDomain.equals(domain)){
+                uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, FEEDS_SERVICE), 1)[0];
+                new RestFeedClient(uri).subUser(user, userSub, "");
+            }else
+                this.setFollower(userSub.split("@")[0], user);
+
+            }
         }
-        else if (!subs.contains(userSub)) {
-            subs.add(userSub);
-            this.setFollower(userSub.split("@")[0], user);
-        }
-    }
+
 
     @Override
     public void unsubscribeUser(String user, String userSub, String pwd) {
-        System.out.println("estou no unsub user");
-        String[] nameAndDomain = user.split("@");
-        String name = nameAndDomain[0];
-        String userDomain = nameAndDomain[1];
-        String domain = "";
-        try {
-            domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
-
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (!domain.equals(userDomain)) {
-            Log.info("User does not exist.");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        Discovery discovery = Discovery.getInstance();
-        URI uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
-        var result = new RestUsersClient(uri).getUser(name, pwd);
-
-        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
-            Log.info("User does not exist.");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        if (result.error().equals(Result.ErrorCode.FORBIDDEN)) {
-            Log.info("Password is incorrect.");
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
-        }
-
-        String[] nameAndDomainSub = userSub.split("@");
-        String nameSub = nameAndDomainSub[0];
-        String userSubDomain = nameAndDomainSub[1];
-        uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, USERS_SERVICE), 1)[0];
-        result = new RestUsersClient(uri).getUser(nameSub, "");
-        if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
-            Log.info("User to be unsubscribed does not exist.");
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-
-        List<String> subs = usersSubs.get(name);
-        if(subs != null){
-            subs.remove(userSub);
-            if(subs.isEmpty())
-                usersSubs.remove(name);
+        if(pwd.equals(""))
             this.removeFollower(userSub.split("@")[0], user);
+        else {
+            System.out.println("estou no unsub user");
+            String[] nameAndDomain = user.split("@");
+            String name = nameAndDomain[0];
+            String userDomain = nameAndDomain[1];
+            String domain = "";
+            try {
+                domain = InetAddress.getLocalHost().getHostName().split("\\.")[1];
+
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (!domain.equals(userDomain)) {
+                Log.info("User does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            Discovery discovery = Discovery.getInstance();
+            URI uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userDomain, USERS_SERVICE), 1)[0];
+            var result = new RestUsersClient(uri).getUser(name, pwd);
+
+            if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
+                Log.info("User does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            if (result.error().equals(Result.ErrorCode.FORBIDDEN)) {
+                Log.info("Password is incorrect.");
+                throw new WebApplicationException(Response.Status.FORBIDDEN);
+            }
+
+            String[] nameAndDomainSub = userSub.split("@");
+            String nameSub = nameAndDomainSub[0];
+            String userSubDomain = nameAndDomainSub[1];
+            uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, USERS_SERVICE), 1)[0];
+            result = new RestUsersClient(uri).getUser(nameSub, "");
+            if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
+                Log.info("User to be unsubscribed does not exist.");
+                throw new WebApplicationException(Response.Status.NOT_FOUND);
+            }
+            List<String> subs = usersSubs.get(name);
+            if (subs != null) {
+                subs.remove(userSub);
+                if (subs.isEmpty())
+                    usersSubs.remove(name);
+
+            if(!userSubDomain.equals(domain)){
+                uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, FEEDS_SERVICE), 1)[0];
+                new RestFeedClient(uri).unsubscribeUser(user, userSub, "");
+            }
+            else
+                this.removeFollower(userSub.split("@")[0], user);
+            }
         }
-        uri = discovery.knownUrisOf(String.format(SERVER_URI_FMT, userSubDomain, USERS_SERVICE), 1)[0];
-        new RestFeedClient(uri).removeFollower(nameSub, user);
 
     }
 
     @Override
     public List<String> listSubs(String user) {
+
+
+
+
+
         System.out.println("estou no list subs");
         String[] nameAndDomain = user.split("@");
         String name = nameAndDomain[0];
@@ -374,7 +409,8 @@ public class FeedsResource implements FeedsService {
             followers = new ArrayList<>();
             userFollowers.put(userName, followers);
         }
-        followers.add(follower);
+        if(!followers.contains(follower))
+            followers.add(follower);
     }
 
     @Override
